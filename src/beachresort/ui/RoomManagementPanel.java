@@ -1,21 +1,14 @@
 package beachresort.ui;
 
 import javax.swing.*;
-import javax.swing.table.DefaultTableModel;
-import javax.swing.table.JTableHeader;
+import javax.swing.table.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.event.*;
 
 public class RoomManagementPanel extends JPanel {
-    // Neutral Professional Color Palette
-    private static final Color BACKGROUND_COLOR = new Color(247, 248, 250);
-    private static final Color PRIMARY_COLOR = new Color(55, 65, 81);
-    private static final Color SECONDARY_COLOR = new Color(75, 85, 99);
-    private static final Color HOVER_COLOR = new Color(99, 102, 241);
-
     private JTable roomsTable;
     private DefaultTableModel tableModel;
+    private JTextField searchField;
 
     public RoomManagementPanel() {
         initComponents();
@@ -23,19 +16,17 @@ public class RoomManagementPanel extends JPanel {
     }
 
     private void initComponents() {
-        setBackground(BACKGROUND_COLOR);
-
-        // Table Columns
+        // Column Names
         String[] columnNames = {
             "Room Number", "Type", "Capacity", 
-            "Price", "Status"
+            "Price", "Status", "Amenities"
         };
 
         // Sample Data
         Object[][] data = {
-            {"101", "Standard", "2", "$100", "Available"},
-            {"202", "Deluxe", "3", "$200", "Occupied"},
-            {"303", "Suite", "4", "$350", "Maintenance"}
+            {"101", "Standard", "2", "$100", "Available", "WiFi, TV"},
+            {"202", "Deluxe", "3", "$200", "Occupied", "WiFi, TV, Balcony"},
+            {"303", "Suite", "4", "$350", "Maintenance", "WiFi, TV, Kitchen"}
         };
 
         // Create Table Model
@@ -51,207 +42,371 @@ public class RoomManagementPanel extends JPanel {
     }
 
     private void customizeTable() {
-        // Table Styling
-        roomsTable.setRowHeight(40);
-        roomsTable.setSelectionBackground(new Color(230, 232, 240));
+        // Enhanced Table Styling
+        roomsTable.setRowHeight(45);
         roomsTable.setFont(new Font("Arial", Font.PLAIN, 12));
+        roomsTable.setShowGrid(true);
+        roomsTable.setIntercellSpacing(new Dimension(0, 0));
 
         // Header Styling
         JTableHeader header = roomsTable.getTableHeader();
-        header.setBackground(PRIMARY_COLOR);
-        header.setForeground(Color.WHITE);
         header.setFont(new Font("Arial", Font.BOLD, 14));
-    }
-
-    private JButton createInteractiveButton(String text, Color bgColor) {
-        JButton button = new JButton(text);
-        button.setFont(new Font("Arial", Font.BOLD, 12));
-        button.setBackground(bgColor);
-        button.setForeground(Color.WHITE);
-        button.setFocusPainted(false);
-        button.setBorderPainted(false);
-        button.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-
-        // Hover and interaction effects
-        button.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseEntered(java.awt.event.MouseEvent evt) {
-                button.setBackground(HOVER_COLOR);
-            }
-            public void mouseExited(java.awt.event.MouseEvent evt) {
-                button.setBackground(bgColor);
-            }
-        });
-
-        return button;
     }
 
     private void setupLayout() {
         setLayout(new BorderLayout(10, 10));
         setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
+        // Search and Filter Panel
+        JPanel searchPanel = createSearchPanel();
+
         // Interactive Buttons
-        JButton addRoomBtn = createInteractiveButton("Add Room", PRIMARY_COLOR);
-        JButton editRoomBtn = createInteractiveButton("Edit Room", SECONDARY_COLOR);
-        JButton deleteRoomBtn = createInteractiveButton("Delete Room", Color.RED);
-
-        // Add Interaction Listeners
-        addRoomBtn.addActionListener(e -> showAddRoomDialog());
-        editRoomBtn.addActionListener(e -> editSelectedRoom());
-        deleteRoomBtn.addActionListener(e -> deleteSelectedRoom());
-
-        // Button Panel
-        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
-        buttonPanel.setBackground(BACKGROUND_COLOR);
-        buttonPanel.add(addRoomBtn);
-        buttonPanel.add(editRoomBtn);
-        buttonPanel.add(deleteRoomBtn);
+        JPanel buttonPanel = createButtonPanel();
 
         // Table Scroll Pane
         JScrollPane scrollPane = new JScrollPane(roomsTable);
-        scrollPane.getViewport().setBackground(Color.WHITE);
 
-        add(buttonPanel, BorderLayout.NORTH);
+        // Layout Arrangement
+        add(searchPanel, BorderLayout.NORTH);
         add(scrollPane, BorderLayout.CENTER);
+        add(buttonPanel, BorderLayout.SOUTH);
     }
 
-    private void showAddRoomDialog() {
+    private JPanel createSearchPanel() {
+        JPanel searchPanel = new JPanel(new BorderLayout(10, 10));
+
+        // Search Field
+        searchField = new JTextField(20);
+        searchField.setFont(new Font("Arial", Font.PLAIN, 12));
+        
+        // Placeholder-like effect
+        searchField.setText("Search rooms...");
+        searchField.setForeground(Color.GRAY);
+        searchField.addFocusListener(new FocusAdapter() {
+            @Override
+            public void focusGained(FocusEvent e) {
+                if (searchField.getText().equals("Search rooms...")) {
+                    searchField.setText("");
+                    searchField.setForeground(Color.BLACK);
+                }
+            }
+
+            @Override
+            public void focusLost(FocusEvent e) {
+                if (searchField.getText().isEmpty()) {
+                    searchField.setText("Search rooms...");
+                    searchField.setForeground(Color.GRAY);
+                }
+            }
+        });
+
+        // Search Button
+        JButton searchButton = new JButton("Search");
+        searchButton.addActionListener(e -> performSearch());
+
+        // Filter Combo Boxes
+        JComboBox<String> typeFilter = new JComboBox<>(new String[]{
+            "All Types", "Standard", "Deluxe", "Suite"
+        });
+        JComboBox<String> statusFilter = new JComboBox<>(new String[]{
+            "All Status", "Available", "Occupied", "Maintenance"
+        });
+
+        // Search and Filter Layout
+        JPanel filterPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        filterPanel.add(new JLabel("Type:"));
+        filterPanel.add(typeFilter);
+        filterPanel.add(new JLabel("Status:"));
+        filterPanel.add(statusFilter);
+        filterPanel.add(searchField);
+        filterPanel.add(searchButton);
+
+        searchPanel.add(filterPanel, BorderLayout.CENTER);
+
+        return searchPanel;
+    }
+
+    private JPanel createButtonPanel() {
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
+
+        // Buttons
+        JButton addRoomBtn = new JButton("Add Room");
+        JButton editRoomBtn = new JButton("Edit Room");
+        JButton deleteRoomBtn = new JButton("Delete Room");
+        JButton reportBtn = new JButton("Room Report");
+
+        // Add Interaction Listeners
+        addRoomBtn.addActionListener(e -> showRoomDialog(false));
+        editRoomBtn.addActionListener(e -> showRoomDialog(true));
+        deleteRoomBtn.addActionListener(e -> deleteSelectedRoom());
+        reportBtn.addActionListener(e -> generateRoomReport());
+
+        buttonPanel.add(addRoomBtn);
+        buttonPanel.add(editRoomBtn);
+        buttonPanel.add(deleteRoomBtn);
+        buttonPanel.add(reportBtn);
+
+        return buttonPanel;
+    }
+
+    private void performSearch() {
+        String searchText = searchField.getText().toLowerCase();
+        if (searchText.equals("search rooms...")) {
+            searchText = "";
+        }
+        
+        TableRowSorter<DefaultTableModel> sorter = new TableRowSorter<>(tableModel);
+        roomsTable.setRowSorter(sorter);
+        
+        // Basic search across all columns
+        sorter.setRowFilter(RowFilter.regexFilter("(?i)" + searchText));
+    }
+
+    private void showRoomDialog(boolean isEdit) {
         JDialog dialog = new JDialog();
-        dialog.setTitle("Add New Room");
-        dialog.setSize(400, 500);
+        dialog.setTitle(isEdit ? "Edit Room" : "Add New Room");
+        dialog.setSize(450, 550);
+        dialog.setModal(true);
         dialog.setLocationRelativeTo(this);
 
-        JPanel panel = new JPanel(new GridLayout(0, 2, 10, 10));
-        panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+        JPanel mainPanel = new JPanel(new BorderLayout(10, 10));
+        mainPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
-        // Interactive Form Fields
-        addFormField(panel, "Room Number:", new JTextField());
-        
+        JPanel formPanel = new JPanel(new GridLayout(0, 2, 10, 10));
+
+        // Form Fields
+        JTextField roomNumberField = new JTextField();
         JComboBox<String> roomTypeCombo = new JComboBox<>(new String[]{
             "Standard", "Deluxe", "Suite", "Executive"
         });
-        addFormField(panel, "Room Type:", roomTypeCombo);
-
-        addFormField(panel, "Capacity:", new JTextField());
-        addFormField(panel, "Price per Night:", new JTextField());
-
+        JTextField capacityField = new JTextField();
+        JTextField priceField = new JTextField();
         JComboBox<String> statusCombo = new JComboBox<>(new String[]{
             "Available", "Occupied", "Maintenance"
         });
-        addFormField(panel, "Status:", statusCombo);
+        JTextField amenitiesField = new JTextField();
 
-        JButton confirmButton = createInteractiveButton("Add Room", PRIMARY_COLOR);
+        addFormField(formPanel, "Room Number:", roomNumberField);
+        addFormField(formPanel, "Room Type:", roomTypeCombo);
+        addFormField(formPanel, "Capacity:", capacityField);
+        addFormField(formPanel, "Price per Night:", priceField);
+        addFormField(formPanel, "Status:", statusCombo);
+        addFormField(formPanel, "Amenities:", amenitiesField);
+
+        // Pre-populate fields if editing
+        if (isEdit) {
+            prePopulateEditForm(roomNumberField, roomTypeCombo, capacityField, priceField, statusCombo, amenitiesField);
+        }
+
+        JButton confirmButton = new JButton(isEdit ? "Update Room" : "Add Room");
         confirmButton.addActionListener(e -> {
-            // Room addition logic
-            dialog.dispose();
-            JOptionPane.showMessageDialog(this, 
-                "Room Added Successfully", 
-                "Room Management", 
-                JOptionPane.INFORMATION_MESSAGE);
+            if (validateRoomInput(roomNumberField, capacityField, priceField)) {
+                if (isEdit) {
+                    updateRoomDetails(roomNumberField, roomTypeCombo, capacityField, priceField, statusCombo, amenitiesField);
+                } else { addNewRoom(roomNumberField, roomTypeCombo, capacityField, priceField, statusCombo, amenitiesField);
+                }
+                dialog.dispose();
+            }
         });
 
-        panel.add(new JLabel()); // Spacer
-        panel.add(confirmButton);
+        mainPanel.add(formPanel, BorderLayout.CENTER);
+        mainPanel.add(confirmButton, BorderLayout.SOUTH);
 
-        dialog.add(panel);
+        dialog.add(mainPanel);
         dialog.setVisible(true);
     }
 
-    private void addFormField(JPanel panel, String label, JComponent component) {
-        JLabel jLabel = new JLabel(label);
-        jLabel.setFont(new Font("Arial", Font.BOLD, 12));
-        panel.add(jLabel);
-        panel.add(component);
+    private void addFormField(JPanel panel, String label, JComponent field) {
+        panel.add(new JLabel(label));
+        panel.add(field);
     }
 
-    private void editSelectedRoom() {
+    private void prePopulateEditForm(JTextField roomNumberField, 
+                                      JComboBox<String> roomTypeCombo, 
+                                      JTextField capacityField, 
+                                      JTextField priceField, 
+                                      JComboBox<String> statusCombo, 
+                                      JTextField amenitiesField) {
         int selectedRow = roomsTable.getSelectedRow();
         if (selectedRow == -1) {
             JOptionPane.showMessageDialog(this, 
                 "Please select a room to edit", 
                 "No Room Selected", 
-                JOptionPane.INFORMATION_MESSAGE);
+                JOptionPane.WARNING_MESSAGE);
             return;
         }
 
-        // Open dialog with selected room's current details
-        JDialog editDialog = new JDialog();
-        editDialog.setTitle("Edit Room");
-        editDialog.setSize(400, 500);
-        editDialog.setLocationRelativeTo(this);
+        // Pre-fill form with selected room's details
+        roomNumberField.setText(tableModel.getValueAt(selectedRow, 0).toString());
+        roomTypeCombo.setSelectedItem(tableModel.getValueAt(selectedRow, 1).toString());
+        capacityField.setText(tableModel.getValueAt(selectedRow, 2).toString());
+        priceField.setText(tableModel.getValueAt(selectedRow, 3).toString());
+        statusCombo.setSelectedItem(tableModel.getValueAt(selectedRow, 4).toString());
+        amenitiesField.setText(tableModel.getValueAt(selectedRow, 5).toString());
+    }
 
-        JPanel panel = new JPanel(new GridLayout(0, 2, 10, 10));
-        panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+    private boolean validateRoomInput(JTextField roomNumberField, 
+                                       JTextField capacityField, 
+                                       JTextField priceField) {
+        // Room Number Validation
+        String roomNumber = roomNumberField.getText().trim();
+        if (roomNumber.isEmpty()) {
+            JOptionPane.showMessageDialog(this, 
+                "Room Number cannot be empty", 
+                "Validation Error", 
+                JOptionPane.ERROR_MESSAGE);
+            return false;
+        }
 
-        // Pre-fill with current room details
-        String roomNumber = (String) tableModel.getValueAt(selectedRow, 0);
-        String roomType = (String) tableModel.getValueAt(selectedRow, 1);
-        String capacity = (String) tableModel.getValueAt(selectedRow, 2);
-        String price = (String) tableModel.getValueAt(selectedRow, 3);
-        String status = (String) tableModel.getValueAt(selectedRow, 4);
+        // Capacity Validation
+        try {
+            int capacity = Integer.parseInt(capacityField.getText().trim());
+            if (capacity <= 0 || capacity > 10) {
+                JOptionPane.showMessageDialog(this, 
+                    "Capacity must be between 1 and 10", 
+                    "Validation Error", 
+                    JOptionPane.ERROR_MESSAGE);
+                return false;
+            }
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(this, 
+                "Capacity must be a valid number", 
+                "Validation Error", 
+                JOptionPane.ERROR_MESSAGE);
+            return false;
+        }
 
-        JTextField roomNumberField = new JTextField(roomNumber);
-        JComboBox<String> roomTypeCombo = new JComboBox<>(new String[]{
-            "Standard", "Deluxe", "Suite", "Executive"
-        });
-        roomTypeCombo.setSelectedItem(roomType);
+        // Price Validation
+        try {
+            double price = Double.parseDouble(priceField.getText().trim().replace("$", ""));
+            if (price <= 0) {
+                JOptionPane.showMessageDialog(this, 
+                    "Price must be a positive number", 
+                    "Validation Error", 
+                    JOptionPane.ERROR_MESSAGE);
+                return false;
+            }
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(this, 
+                "Price must be a valid number", 
+                "Validation Error", 
+                JOptionPane.ERROR_MESSAGE);
+            return false;
+        }
 
-        JTextField capacityField = new JTextField(capacity);
-        JTextField priceField = new JTextField(price);
-        JComboBox<String> statusCombo = new JComboBox<>(new String[]{
-            "Available", "Occupied", "Maintenance"
-        });
-        statusCombo.setSelectedItem(status);
+        return true;
+    }
 
-        addFormField(panel, "Room Number:", roomNumberField);
-        addFormField(panel, "Room Type:", roomTypeCombo);
-        addFormField(panel, "Capacity:", capacityField);
-        addFormField(panel, "Price per Night:", priceField);
-        addFormField(panel, "Status:", statusCombo);
+    private void generateRoomReport() {
+        // Generate a simple room occupancy report
+        int totalRooms = tableModel.getRowCount();
+        int availableRooms = 0;
+        int occupiedRooms = 0;
+        int maintenanceRooms = 0;
 
-        JButton confirmButton = createInteractiveButton("Update Room", PRIMARY_COLOR);
-        confirmButton.addActionListener(e -> {
-            // Update room logic
+        for (int i = 0; i < totalRooms; i++) {
+            String status = tableModel.getValueAt(i, 4).toString();
+            switch (status) {
+                case "Available":
+                    availableRooms++;
+                    break;
+                case "Occupied":
+                    occupiedRooms++;
+                    break;
+                case "Maintenance":
+                    maintenanceRooms++;
+                    break;
+            }
+        }
+
+        // Create report dialog
+        JDialog reportDialog = new JDialog();
+        reportDialog.setTitle("Room Occupancy Report");
+        reportDialog.setSize(400, 300);
+        reportDialog.setModal(true);
+        reportDialog.setLocationRelativeTo(this);
+
+        JPanel reportPanel = new JPanel();
+        reportPanel.setLayout(new BoxLayout(reportPanel, BoxLayout.Y_AXIS));
+
+        // Report Details
+        JLabel totalRoomsLabel = new JLabel("Total Rooms: " + totalRooms);
+        JLabel availableRoomsLabel = new JLabel("Available Rooms: " + availableRooms);
+        JLabel occupiedRoomsLabel = new JLabel("Occupied Rooms: " + occupiedRooms);
+        JLabel maintenanceRoomsLabel = new JLabel("Rooms in Maintenance: " + maintenanceRooms);
+
+        // Styling labels
+        Font labelFont = new Font("Arial", Font.BOLD, 14);
+        totalRoomsLabel.setFont(labelFont);
+        availableRoomsLabel.setFont(labelFont);
+        occupiedRoomsLabel.setFont(labelFont);
+        maintenanceRoomsLabel.setFont(labelFont);
+
+        // Add to panel
+        reportPanel.add(Box.createVerticalStrut(20));
+        reportPanel.add(totalRoomsLabel);
+        reportPanel.add(Box.createVerticalStrut(10));
+        reportPanel.add(availableRoomsLabel);
+        reportPanel.add(Box.createVerticalStrut(10));
+        reportPanel.add(occupiedRoomsLabel);
+        reportPanel.add(Box.createVerticalStrut(10));
+        reportPanel.add(maintenanceRoomsLabel);
+
+        // Close button
+        JButton closeButton = new JButton("Close");
+        closeButton.addActionListener(e -> reportDialog.dispose());
+
+        reportPanel.add(Box.createVerticalStrut(20));
+        reportPanel.add(closeButton);
+        reportPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        reportDialog.add(reportPanel);
+        reportDialog.setVisible(true);
+    }
+
+    private void deleteSelectedRoom() {
+        int selectedRow = roomsTable.getSelectedRow();
+        if (selectedRow != -1) {
+            tableModel.removeRow(selectedRow);
+        } else {
+            JOptionPane.showMessageDialog(this, 
+                "Please select a room to delete", 
+                "No Room Selected", 
+                JOptionPane.WARNING_MESSAGE);
+        }
+    }
+
+    private void updateRoomDetails(JTextField roomNumberField, 
+                                    JComboBox<String> roomTypeCombo, 
+                                    JTextField capacityField, 
+                                    JTextField priceField, 
+                                    JComboBox<String> statusCombo, 
+                                    JTextField amenitiesField) {
+        int selectedRow = roomsTable.getSelectedRow();
+        if (selectedRow != -1) {
             tableModel.setValueAt(roomNumberField.getText(), selectedRow, 0);
             tableModel.setValueAt(roomTypeCombo.getSelectedItem(), selectedRow, 1);
             tableModel.setValueAt(capacityField.getText(), selectedRow, 2);
             tableModel.setValueAt(priceField.getText(), selectedRow, 3);
             tableModel.setValueAt(statusCombo.getSelectedItem(), selectedRow, 4);
-            editDialog.dispose();
-            JOptionPane.showMessageDialog(this, 
-                "Room Updated Successfully", 
-                "Room Management", 
-                JOptionPane.INFORMATION_MESSAGE);
-        });
-
-        panel.add(new JLabel()); // Spacer
-        panel.add(confirmButton);
-
-        editDialog.add(panel);
-        editDialog.setVisible(true);
+            tableModel.setValueAt(amenitiesField.getText(), selectedRow, 5);
+        }
     }
 
-    private void deleteSelectedRoom() {
-        int selectedRow = roomsTable.getSelectedRow();
-        if (selectedRow == -1) {
-            JOptionPane.showMessageDialog(this, 
-                "Please select a room to delete", 
-                "No Room Selected", 
-                JOptionPane.INFORMATION_MESSAGE);
-            return;
-        }
-
-        int confirm = JOptionPane.showConfirmDialog(this, 
-            "Are you sure you want to delete this room?", 
-            "Confirm Deletion", 
-            JOptionPane.YES_NO_OPTION,
-            JOptionPane.QUESTION_MESSAGE);
-
-        if (confirm == JOptionPane.YES_OPTION) {
-            tableModel.removeRow(selectedRow);
-            JOptionPane.showMessageDialog(this, 
-                "Room Deleted Successfully", 
-                "Room Management", 
-                JOptionPane.INFORMATION_MESSAGE);
-        }
+    private void addNewRoom(JTextField roomNumberField, 
+                            JComboBox<String> roomTypeCombo, 
+                            JTextField capacityField, 
+                            JTextField priceField, 
+                            JComboBox<String> statusCombo, 
+                            JTextField amenitiesField) {
+        Object[] newRoom = {
+            roomNumberField.getText(),
+            roomTypeCombo.getSelectedItem(),
+            capacityField.getText(),
+            priceField.getText(),
+            statusCombo.getSelectedItem(),
+            amenitiesField.getText()
+        };
+        tableModel.addRow(newRoom);
     }
 }
