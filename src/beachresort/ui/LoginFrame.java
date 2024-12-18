@@ -105,7 +105,7 @@ public class LoginFrame extends JFrame {
         panel.add(confirmPasswordField);
 
         panel.add(new JLabel("Role:"));
-        JComboBox<String> roleComboBox = new JComboBox<>(new String[]{"CUSTOMER", "STAFF"});
+        JComboBox<String> roleComboBox = new JComboBox<>(new String[]{"CUSTOMER", "STAFF","OWNER"});
         panel.add(roleComboBox);
 
         // Submit Button
