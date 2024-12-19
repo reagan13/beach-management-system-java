@@ -1,80 +1,105 @@
-// services/AuthenticationService.java
 package beachresort.services;
 
 import beachresort.models.User;
 import beachresort.repositories.UserRepository;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
+
+import java.sql.SQLException;
+import java.util.Optional;
+import java.util.regex.Pattern;
 
 public class AuthenticationService {
     private UserRepository userRepository;
 
-    public AuthenticationService() {
+    public AuthenticationService() throws SQLException {
         this.userRepository = new UserRepository();
     }
 
-    // Hash password method
-    private String hashPassword(String password) {
-        try {
-            MessageDigest md = MessageDigest.getInstance("SHA-256");
-            byte[] hashedBytes = md.digest(password.getBytes());
-            
-            // Convert to hexadecimal
-            StringBuilder sb = new StringBuilder();
-            for (byte b : hashedBytes) {
-                sb.append(String.format("%02x", b));
-            }
-            return sb.toString();
-        } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException("Password hashing failed", e);
-        }
-    }
-
-    // Login method
-    public boolean login(String username, String password) {
-        User user = userRepository.findByUsername(username);
-        
-        if (user == null) {
-            return false; // User not found
-        }
-
-        // Compare hashed passwords
-        String hashedInputPassword = hashPassword(password);
-        return user.getPassword().equals(hashedInputPassword);
-    }
-
-    // User registration method
     public boolean registerUser(String username, String password, String role) {
-        // Check if username already exists
-        if (userRepository.findByUsername(username) != null) {
-            return false; // Username already taken
+        return registerUser(username, password, role, null, null);
+    }
+
+    public boolean registerUser(String username, String password, String role, String email, String fullName) {
+        // Validate inputs
+        if (!isValidUsername(username)) {
+            return false;
         }
 
-        // Create new user with hashed password
-        User newUser = new User();
-        newUser.setUsername(username);
-        newUser.setPassword(hashPassword(password));
-        newUser.setRole(role);
+        if (!isValidPassword(password)) {
+            return false;
+        }
 
+        // Check if username already exists
+        if (userRepository.usernameExists(username)) {
+            return false;
+        }
+
+        // Create user object
+        User newUser = new User(0, username, password, role, email, fullName);
+        
+        // Attempt to create user
         return userRepository.createUser(newUser);
     }
 
-    // Authentication method
-    public User authenticateUser(String username, String password) {
-        User user = userRepository.findByUsername(username);
+    public boolean authenticateUser(String username, String password, String role) {
+        Optional<User> userOptional = userRepository.findByUsername(username);
         
-        if (user == null) {
-            return null; // User not found
+        if (userOptional.isPresent()) {
+            User user = userOptional.get();
+            
+            // Simple password and role check
+            return user.getPassword().equals(password) && 
+                   user.getRole().equals(role);
+        }
+        
+        return false;
+    }
+
+    public String getUserRole(String username) {
+        Optional<User> userOptional = userRepository.findByUsername(username);
+        return userOptional.map(User::getRole).orElse(null);
+    }
+
+    // Username validation
+    public boolean isValidUsername(String username) {
+        if (username == null || username.trim().isEmpty()) {
+            return false;
         }
 
-        // Compare hashed passwords
-        String hashedInputPassword = hashPassword(password);
-        if (user.getPassword().equals(hashedInputPassword)) {
-            return user;
+        // Username must be:
+        // - 3-50 characters long
+        // - Contain only alphanumeric characters and underscores
+        // - Start with a letter
+        return Pattern.matches("^[a-zA-Z][a-zA-Z0-9_]{2,49}$", username);
+    }
+
+    // Password validation
+    public boolean isValidPassword(String password) {
+        if (password == null) {
+            return false;
+        }
+
+        // Simple password validation
+        // - At least 6 characters long
+        return password.length() >= 6;
+    }
+
+    // Additional utility methods
+    public boolean changePassword(String username, String oldPassword, String newPassword) {
+        Optional<User> userOptional = userRepository.findByUsername(username);
+        
+        if (userOptional.isPresent()) {
+            User user = userOptional.get();
+            
+            // Verify current password
+            if (user.getPassword().equals(oldPassword)) {
+                // Update password
+                user.setPassword(newPassword);
+                
+                // Save updated user
+                return userRepository.updateUser(user);
+            }
         }
         
-        return null;
+        return false;
     }
-    
-    
 }

@@ -1,5 +1,7 @@
 package beachresort;
 
+import java.sql.SQLException;
+
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
@@ -21,7 +23,12 @@ public class Main {
                 
                 // Launch application
                 SwingUtilities.invokeLater(() -> {
-                    new LoginFrame().setVisible(true);
+                    try {
+                        new LoginFrame().setVisible(true);
+                    } catch (SQLException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    }
                 });
             } else {
                 // Show error dialog if connection fails
@@ -44,10 +51,7 @@ public class Main {
             bookingRepository.verifyTableStructure();
             System.out.println("Booking Repository initialized successfully.");
             
-            // // Initialize and verify room repository (if you have one)
-            // RoomRepository roomRepository = new RoomRepository();
-            // roomRepository.verifyTableStructure();
-            // System.out.println("Room Repository initialized successfully.");
+        
             
         } catch (Exception e) {
             System.err.println("Error initializing repositories: " + e.getMessage());

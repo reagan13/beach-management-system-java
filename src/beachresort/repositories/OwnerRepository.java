@@ -106,4 +106,9 @@ public class OwnerRepository {
             e.printStackTrace();
         }
     }
+
+    public Owner getOwnerByUsername(String username) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getOwnerByUsername'");
+    }
 }

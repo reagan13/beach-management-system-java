@@ -1,54 +1,228 @@
-// repositories/UserRepository.java
 package beachresort.repositories;
 
-import beachresort.database.DatabaseConnection;
 import beachresort.models.User;
+import beachresort.database.DatabaseConnection;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 public class UserRepository {
-    public User findByUsername(String username) {
-        String sql = "SELECT * FROM users WHERE username = ?";
+    private Connection connection;
 
-        try (Connection conn = DatabaseConnection.getConnection();
-                PreparedStatement pstmt = conn.prepareStatement(sql)) {
+    public UserRepository() throws SQLException {
+        connection = DatabaseConnection.getConnection();
+        createUserTableIfNotExists();
+    }
 
-            pstmt.setString(1, username);
+    public void createUserTableIfNotExists() {
+        try {
+        Statement stmt = connection.createStatement();
+        String createTableSQL = "CREATE TABLE IF NOT EXISTS users (" +
+                "id INT AUTO_INCREMENT PRIMARY KEY, " +
+                "username VARCHAR(50) UNIQUE NOT NULL, " +
+                "password VARCHAR(255) NOT NULL, " +
+                "role VARCHAR(20) NOT NULL, " +
+                "email VARCHAR(100), " +
+                "full_name VARCHAR(100), " +
+                "created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP" +
+                ")";
+        stmt.execute(createTableSQL);
+        
+        // Create unique index on username
+        String createIndexSQL = "CREATE UNIQUE INDEX IF NOT EXISTS idx_username ON users(username)";
+        stmt.execute(createIndexSQL);
+    } catch (SQLException e) {
+        e.printStackTrace();
+    }
+    }
 
-            try (ResultSet rs = pstmt.executeQuery()) {
-                if (rs.next()) {
-                    User user = new User();
-                    user.setId(rs.getInt("id"));
-                    user.setUsername(rs.getString("username"));
-                    user.setPassword(rs.getString("password"));
-                    user.setRole(rs.getString("role"));
-                    return user;
+    public boolean usernameExists(String username) {
+        try {
+            String query = "SELECT COUNT(*) FROM users WHERE username = ?";
+            try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+                pstmt.setString(1, username);
+                try (ResultSet rs = pstmt.executeQuery()) {
+                    if (rs.next()) {
+                        return rs.getInt(1) > 0;
+                    }
                 }
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return null;
+        return false;
     }
-      // Create new user
+
     public boolean createUser(User user) {
-        String sql = "INSERT INTO users (username, password, role) VALUES (?, ?, ?)";
-        
-        try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            
-            pstmt.setString(1, user.getUsername());
-            pstmt.setString(2, user.getPassword());
-            pstmt.setString(3, user.getRole());
-            
-            int affectedRows = pstmt.executeUpdate();
-            return affectedRows > 0;
+        try {
+            String query = "INSERT INTO users (username, password, role, email, full_name) VALUES (?, ?, ?, ?, ?)";
+            try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+                pstmt.setString(1, user.getUsername());
+                pstmt.setString(2, user.getPassword());
+                pstmt.setString(3, user.getRole());
+                pstmt.setString(4, user.getEmail());
+                pstmt.setString(5, user.getFullName());
+                
+                int rowsAffected = pstmt.executeUpdate();
+                return rowsAffected > 0;
+            }
         } catch (SQLException e) {
             e.printStackTrace();
             return false;
         }
+    }
+
+    public Optional<User> findByUsername(String username) {
+        try {
+            String query = "SELECT * FROM users WHERE username = ?";
+            try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+                pstmt.setString(1, username);
+                try (ResultSet rs = pstmt.executeQuery()) {
+                    if (rs.next()) {
+                        return Optional.of(new User(
+                            rs.getInt("id"),
+                            rs.getString("username"),
+                            rs.getString("password"),
+                            rs.getString("role"),
+                            rs.getString("email"),
+                            rs.getString("full_name")
+                        ));
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+
+
+        }
+                return null;
+
+    }
+        public boolean updateUser(User user) {
+        try {
+            String query = "UPDATE users SET " +
+                           "password = ?, " +
+                           "role = ?, " +
+                           "email = ?, " +
+                           "full_name = ? " +
+                           "WHERE username = ?";
+            
+            try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+                pstmt.setString(1, user.getPassword());
+                pstmt.setString(2, user.getRole());
+                pstmt.setString(3, user.getEmail());
+                pstmt.setString(4, user.getFullName());
+                pstmt.setString(5, user.getUsername());
+                
+                int rowsAffected = pstmt.executeUpdate();
+                return rowsAffected > 0;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public boolean deleteUser(String username) {
+        try {
+            String query = "DELETE FROM users WHERE username = ?";
+            try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+                pstmt.setString(1, username);
+                
+                int rowsAffected = pstmt.executeUpdate();
+                return rowsAffected > 0;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public List<User> getAllUsers() {
+        List<User> users = new ArrayList<>();
+        try {
+            String query = "SELECT * FROM users";
+            try (Statement stmt = connection.createStatement();
+                 ResultSet rs = stmt.executeQuery(query)) {
+                
+                while (rs.next()) {
+                    User user = new User(
+                        rs.getInt("id"),
+                        rs.getString("username"),
+                        rs.getString("password"),
+                        rs.getString("role"),
+                        rs.getString("email"),
+                        rs.getString("full_name")
+                    );
+                    users.add(user);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return users;
+    }
+
+    public List<User> getUsersByRole(String role) {
+        List<User> users = new ArrayList<>();
+        try {
+            String query = "SELECT * FROM users WHERE role = ?";
+            try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+                pstmt.setString(1, role);
+                
+                try (ResultSet rs = pstmt.executeQuery()) {
+                    while (rs.next()) {
+                        User user = new User(
+                            rs.getInt("id"),
+                            rs.getString("username"),
+                            rs.getString("password"),
+                            rs.getString("role"),
+                            rs.getString("email"),
+                            rs.getString("full_name")
+                        );
+                        users.add(user);
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return users;
+    }
+
+    public int getUserCount() {
+        try {
+            String query = "SELECT COUNT(*) FROM users";
+            try (Statement stmt = connection.createStatement();
+                 ResultSet rs = stmt.executeQuery(query)) {
+                
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+
+    public int getUserCountByRole(String role) {
+        try {
+            String query = "SELECT COUNT(*) FROM users WHERE role = ?";
+            try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+                pstmt.setString(1, role);
+                
+                try (ResultSet rs = pstmt.executeQuery()) {
+                    if (rs.next()) {
+                        return rs.getInt(1);
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return 0;
     }
 }
