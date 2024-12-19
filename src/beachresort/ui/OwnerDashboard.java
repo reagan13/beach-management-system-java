@@ -1,12 +1,24 @@
 package beachresort.ui;
 
+import beachresort.models.Owner;
+import beachresort.repositories.OwnerRepository;
+import beachresort.repositories.DashboardStats;
+
 import javax.swing.*;
 import java.awt.*;
+import java.sql.SQLException;
 
 public class OwnerDashboard extends JFrame {
     private JPanel mainContent;
+    private Owner currentOwner;
+    private OwnerRepository ownerRepository;
+    private DashboardStats dashboardStats;
 
-    public OwnerDashboard() {
+    public OwnerDashboard(Owner owner) throws SQLException {
+        this.currentOwner = owner;
+        this.ownerRepository = new OwnerRepository();
+        this.dashboardStats = ownerRepository.getDashboardStats();
+
         setTitle("Resort Management System");
         setSize(1000, 600);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -44,7 +56,7 @@ public class OwnerDashboard extends JFrame {
 
         // User and Logout Section
         JPanel userPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        JLabel userLabel = new JLabel("Logged in as: Admin");
+        JLabel userLabel = new JLabel("Logged in as: " + currentOwner.getFullName());
         userLabel.setFont(new Font("Dialog", Font.PLAIN, 14));
         
         JButton logoutButton = new JButton("Logout");
@@ -78,7 +90,7 @@ public class OwnerDashboard extends JFrame {
 
         String[] menuItems = {
             "Dashboard", "Bookings", "Rooms", 
-            "Staff", "Inventory", "Reports", "Settings"
+            "Staff", "Inventory"
         };
 
         for (String item : menuItems) {
@@ -97,21 +109,15 @@ public class OwnerDashboard extends JFrame {
 
     private JPanel createDashboard() {
         JPanel dashboardContainer = new JPanel(new BorderLayout());
-        
-        // // Dashboard Title
-        // JLabel dashboardTitle = new JLabel("Dashboard Overview", SwingConstants.LEFT);
-        // dashboardTitle.setFont(new Font("Dialog", Font.BOLD, 18));
-        // dashboardTitle.setBorder(BorderFactory.createEmptyBorder(0, 0, 20, 0));
-        // dashboardContainer.add(dashboardTitle, BorderLayout.NORTH);
 
         // Dashboard Cards
         JPanel dashboard = new JPanel(new GridLayout(2, 3, 20, 20));
 
-        String[] cardTitles = {
-            "Total Bookings", "Rooms Occupied", 
-            "Monthly Revenue", "Pending Bookings", 
-            "Available Rooms", "Customer Satisfaction"
-        };
+       String[] cardTitles = {
+        "Total Bookings", "Rooms Occupied", 
+        "Monthly Revenue", "Pending Bookings", 
+        "Available Rooms", "Total Staff"
+    };
 
         for (String title : cardTitles) {
             dashboard.add(createDashboardCard(title));
@@ -131,7 +137,7 @@ public class OwnerDashboard extends JFrame {
         JLabel titleLabel = new JLabel(title, SwingConstants.CENTER);
         titleLabel.setFont(new Font("Dialog", Font.BOLD, 14));
 
-        JLabel valueLabel = new JLabel("0", SwingConstants.CENTER);
+        JLabel valueLabel = new JLabel(getCardValue(title), SwingConstants.CENTER);
         valueLabel.setFont(new Font("Dialog", Font.PLAIN, 22));
 
         card.add(titleLabel, BorderLayout.NORTH);
@@ -139,6 +145,25 @@ public class OwnerDashboard extends JFrame {
 
         return card;
     }
+
+   private String getCardValue(String title) {
+    switch(title) {
+        case "Total Bookings":
+            return String.valueOf(dashboardStats.getTotalBookings());
+        case "Rooms Occupied":
+            return String.valueOf(dashboardStats.getRoomsOccupied());
+        case "Monthly Revenue":
+            return String.format("$%.2f", dashboardStats.getMonthlyRevenue());
+        case "Pending Bookings":
+            return String.valueOf(dashboardStats.getPendingBookings());
+        case "Available Rooms":
+            return String.valueOf(dashboardStats.getAvailableRooms());
+        case "Total Staff":
+            return String.valueOf(dashboardStats.getTotalStaff());
+        default:
+            return "0";
+    }
+}
 
     private void updateMainContent(String section) {
         mainContent.removeAll();
@@ -166,12 +191,7 @@ public class OwnerDashboard extends JFrame {
             case "Inventory":
                 contentPanel.add(new InventoryManagementPanel(), BorderLayout.CENTER);
                 break;
-            case "Reports":
-                contentPanel.add(new ReportingPanel(), BorderLayout.CENTER);
-                break;
-            case "Settings":
-                contentPanel.add(new JLabel("Settings Panel"), BorderLayout.CENTER);
-                break;
+           
         }
         
         mainContent.add(contentPanel, BorderLayout.CENTER);
@@ -179,6 +199,7 @@ public class OwnerDashboard extends JFrame {
         mainContent.repaint();
     }
 
+        // Main method for testing
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
             try {
@@ -187,8 +208,120 @@ public class OwnerDashboard extends JFrame {
                 e.printStackTrace();
             }
             
-            OwnerDashboard dashboard = new OwnerDashboard();
+            // Create a default owner for testing
+            Owner testOwner = new Owner(
+                1, 
+                "admin", 
+                "Resort Administrator", 
+                "admin@beachresort.com", 
+                "1234567890", 
+                "Super Admin"
+            );
+            
+            OwnerDashboard dashboard = null;
+            try {
+                dashboard = new OwnerDashboard(testOwner);
+            } catch (SQLException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
             dashboard.setVisible(true);
         });
+    }
+
+    // Additional constructor for flexibility
+    public OwnerDashboard() throws SQLException {
+        this(new Owner(
+            1, 
+            "admin", 
+            "Resort Administrator", 
+            "admin@beachresort.com", 
+            "1234567890", 
+            "Super Admin"
+        ));
+    }
+
+    // Getter for current owner
+    public Owner getCurrentOwner() {
+        return currentOwner;
+    }
+
+    // Method to refresh dashboard stats
+    public void refreshDashboardStats() {
+        this.dashboardStats = ownerRepository.getDashboardStats();
+        // Optionally, you can call a method to update the dashboard cards
+        updateDashboardCards();
+    }
+
+    // Helper method to update dashboard cards
+    private void updateDashboardCards() {
+        // This method would need to be implemented to dynamically update the dashboard cards
+        // You might need to keep track of the dashboard panel and its card labels
+        Component[] components = mainContent.getComponents();
+        for (Component comp : components) {
+            if (comp instanceof JPanel) {
+                JPanel dashboardPanel = (JPanel) comp;
+                // Iterate through dashboard cards and update their values
+                // This is a simplified example and might need more robust implementation
+                for (Component cardComp : dashboardPanel.getComponents()) {
+                    if (cardComp instanceof JPanel) {
+                        JPanel card = (JPanel) cardComp;
+                        // Find the value label and update it
+                        for (Component labelComp : card.getComponents()) {
+                            if (labelComp instanceof JLabel && 
+                                ((JLabel) labelComp).getFont().isBold()) {
+                                JLabel titleLabel = (JLabel) labelComp;
+                                JLabel valueLabel = findValueLabel(card);
+                                if (valueLabel != null) {
+                                    valueLabel.setText(getCardValue(titleLabel.getText()));
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // Helper method to find the value label in a card
+    private JLabel findValueLabel(JPanel card) {
+        for (Component comp : card.getComponents()) {
+            if (comp instanceof JLabel && 
+                ((JLabel) comp).getFont().getSize() == 22) {
+                return (JLabel) comp;
+            }
+        }
+        return null;
+    }
+
+    // Method to handle owner profile updates
+    public void updateOwnerProfile(Owner updatedOwner) {
+        this.currentOwner = updatedOwner;
+        // Update the top bar user label
+        Component[] topComponents = getContentPane().getComponents();
+        for (Component comp : topComponents) {
+            if (comp instanceof JPanel && comp.getName() != null && 
+                comp.getName().equals("topBar")) {
+                updateTopBarUserLabel((JPanel) comp);
+                break;
+            }
+        }
+    }
+
+    // Helper method to update top bar user label
+    private void updateTopBarUserLabel(JPanel topBar) {
+        for (Component comp : topBar.getComponents()) {
+            if (comp instanceof JPanel) {
+                JPanel userPanel = (JPanel) comp;
+                for (Component labelComp : userPanel.getComponents()) {
+                    if (labelComp instanceof JLabel && 
+                        labelComp.getName() != null && 
+                        labelComp.getName().equals("userLabel")) {
+                        ((JLabel) labelComp).setText("Logged in as: " + currentOwner.getFullName());
+                        break;
+                    }
+                }
+            }
+        }
     }
 }
