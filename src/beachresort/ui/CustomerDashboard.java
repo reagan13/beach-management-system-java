@@ -56,8 +56,8 @@ public class CustomerDashboard extends JFrame {
 
         // User and Logout Section
         JPanel userPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        JLabel userLabel = new JLabel("Logged in as: " + currentOwner.getFullName());
-        userLabel.setFont(new Font("Dialog", Font.PLAIN, 14));
+    
+     
         
         JButton logoutButton = new JButton("Logout");
         logoutButton.setFont(new Font("Dialog", Font.PLAIN, 12));
@@ -73,7 +73,7 @@ public class CustomerDashboard extends JFrame {
             }
         });
 
-        userPanel.add(userLabel);
+       
         userPanel.add(logoutButton);
 
         topBar.add(titleLabel, BorderLayout.WEST);
@@ -90,7 +90,6 @@ public class CustomerDashboard extends JFrame {
 
         String[] menuItems = {
             "Dashboard", "Bookings", "Rooms", 
-            "Staff", "Inventory"
         };
 
         for (String item : menuItems) {
@@ -175,15 +174,16 @@ public class CustomerDashboard extends JFrame {
         JPanel contentPanel = new JPanel(new BorderLayout());
         contentPanel.add(sectionTitle, BorderLayout.NORTH);
 
+        
         switch (section) {
             case "Dashboard":
                 contentPanel.add(createDashboard(), BorderLayout.CENTER);
                 break;
             case "Bookings":
-                contentPanel.add(new BookingManagementPanel(), BorderLayout.CENTER);
+                contentPanel.add(new CustomerBookingPanel(), BorderLayout.CENTER);
                 break;
             case "Rooms":
-                contentPanel.add(new RoomManagementPanel(), BorderLayout.CENTER);
+                contentPanel.add(new CustomerRoomPanel(), BorderLayout.CENTER);
                 break;
             case "Staff":
                 contentPanel.add(new StaffManagementPanel(), BorderLayout.CENTER);

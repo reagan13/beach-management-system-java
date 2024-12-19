@@ -145,8 +145,8 @@ public class LoginFrame extends JFrame {
         // Different main windows based on user role
         switch (role) {
             case "CUSTOMER":
-                 new OwnerDashboard().setVisible(true);
-                break;
+                 new CustomerDashboard().setVisible(true);
+                break;  
             case "STAFF":
                 new OwnerDashboard().setVisible(true);
                 break;
