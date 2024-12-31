@@ -2,177 +2,192 @@ package beachresort.ui;
 
 import beachresort.services.AuthenticationService;
 
-
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.sql.SQLException;
 
 public class LoginFrame extends JFrame {
     private JTextField usernameField;
     private JPasswordField passwordField;
     private JComboBox<String> roleComboBox;
-    private JButton loginButton;
-    private JButton registerButton;
     private AuthenticationService authService;
 
-    public LoginFrame() throws SQLException {
-        // Set up the frame
-        setTitle("Beach Resort Login");
-        setSize(400, 300);
+    public LoginFrame() {
+        // Frame setup
+        setTitle("Beach Resort Management System");
+        setSize(400, 500);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
 
-        // Initialize authentication service
-        authService = new AuthenticationService();
+      // Initialize authentication service
+        try {
+            authService = new AuthenticationService();
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, 
+                "Failed to initialize authentication: " + e.getMessage(), 
+                "Initialization Error", 
+                JOptionPane.ERROR_MESSAGE);
+            dispose();
+            return;
+        }
 
-        // Create components
-        initComponents();
-
-        // Create layout
-        createLayout();
+        // Create and set up the content
+        createLoginUI();
     }
 
-    private void initComponents() {
-        // Username Field
-        usernameField = new JTextField(20);
-        // usernameField.setPlaceholder("Username");
-
-        // Password Field
-        passwordField = new JPasswordField(20);
-        // passwordField.setPlaceholder("Password");
-
-        // Role Combo Box
-        String[] roles = {"CUSTOMER", "STAFF", "OWNER"};
-        roleComboBox = new JComboBox<>(roles);
-
-        // Login Button
-        loginButton = new JButton("Login");
-        loginButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                try {
-                    performLogin();
-                } catch (SQLException e1) {
-                    // TODO Auto-generated catch block
-                    e1.printStackTrace();
-                }
-            }
-        });
-
-        // Register Button
-        registerButton = new JButton("Register");
-        registerButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                try {
-                    openRegisterDialog();
-                } catch (SQLException e1) {
-                    // TODO Auto-generated catch block
-                    e1.printStackTrace();
-                }
-            }
-        });
-    }
-
-    private void createLayout() {
-        // Use GridBagLayout for flexible positioning
-        setLayout(new GridBagLayout());
+    private void createLoginUI() {
+        // Main panel with centered layout
+        JPanel mainPanel = new JPanel(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(10, 10, 10, 10);
         gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.gridwidth = 2;
 
-        // Logo or Title (Optional)
-        JLabel titleLabel = new JLabel("Beach Resort Login", SwingConstants.CENTER);
-        titleLabel.setFont(new Font("Arial", Font.BOLD, 18));
+        // Title
+        JLabel titleLabel = new JLabel("Beach Resort Management System", SwingConstants.CENTER);
+        titleLabel.setFont(titleLabel.getFont().deriveFont(Font.BOLD, 18f));
         gbc.gridx = 0;
         gbc.gridy = 0;
-        gbc.gridwidth = 2;
-        add(titleLabel, gbc);
+        mainPanel.add(titleLabel, gbc);
 
-        // Username Field
-        gbc.gridx = 0;
+        // Username Label and Field
         gbc.gridy = 1;
-        gbc.gridwidth = 2;
-        add(usernameField, gbc);
+        gbc.gridwidth = 1;
+        mainPanel.add(new JLabel("Username:"), gbc);
+        
+        gbc.gridx = 1;
+        usernameField = new JTextField(20);
+        usernameField.setPreferredSize(new Dimension(200, 30));
+        mainPanel.add(usernameField, gbc);
 
-        // Password Field
+        // Password Label and Field
+        gbc.gridx = 0;
         gbc.gridy = 2;
-        add(passwordField, gbc);
+        mainPanel.add(new JLabel("Password:"), gbc);
+        
+        gbc.gridx = 1;
+        passwordField = new JPasswordField(20);
+        passwordField.setPreferredSize(new Dimension(200, 30));
+        mainPanel.add(passwordField, gbc);
 
-        // Role Combo Box
+        // Role Label and Combo Box
+        gbc.gridx = 0;
         gbc.gridy = 3;
-        add(roleComboBox, gbc);
+        mainPanel.add(new JLabel("Role:"), gbc);
+        
+        gbc.gridx = 1;
+        String[] roles = {"CUSTOMER", "STAFF", "OWNER"};
+        roleComboBox = new JComboBox<>(roles);
+        roleComboBox.setPreferredSize(new Dimension(200, 30));
+        mainPanel.add(roleComboBox, gbc);
 
         // Login Button
+        gbc.gridx = 0;
         gbc.gridy = 4;
-        gbc.gridwidth = 1;
-        add(loginButton, gbc);
+        gbc.gridwidth = 2;
+        JButton loginButton = new JButton("Login");
+        loginButton.setPreferredSize(new Dimension(250, 35));
+        loginButton.addActionListener(this::performLogin);
+        mainPanel.add(loginButton, gbc);
 
-        // Register Button
-        gbc.gridx = 1;
-        add(registerButton, gbc);
+        // Register Link
+        gbc.gridy = 5;
+        JLabel registerLink = new JLabel("Don't have an account? Register here");
+        registerLink.setForeground(Color.BLUE);
+        registerLink.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        registerLink.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                openRegisterDialog();
+            }
+        });
+        registerLink.setHorizontalAlignment(SwingConstants.CENTER);
+        mainPanel.add(registerLink, gbc);
+
+        // Add main panel to frame
+        add(mainPanel);
     }
 
-    private void performLogin() throws SQLException {
-        String username = usernameField.getText().trim();
-        String password = new String(passwordField.getPassword());
-        String role = (String) roleComboBox.getSelectedItem();
+    private void performLogin(ActionEvent e) {
+        // Validate input fields
+        if (usernameField.getText().trim().isEmpty()) {
+            JOptionPane.showMessageDialog(this, 
+                "Username cannot be empty", 
+                "Validation Error", 
+                JOptionPane.WARNING_MESSAGE);
+            return;
+        }
 
-        if (authService.authenticateUser(username, password, role)) {
-            // Successful login
+        if (passwordField.getPassword().length == 0) {
             JOptionPane.showMessageDialog(this, 
-                "Login Successful!", 
-                "Success", 
-                JOptionPane.INFORMATION_MESSAGE);
-            
-            // Open main application window based on role
-            openMainWindow(role);
-            
-            // Close login form
-            dispose();
-        } else {
-            // Failed login
+                "Password cannot be empty", 
+                "Validation Error", 
+                JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        try {
+            String username = usernameField.getText().trim();
+            String password = new String(passwordField.getPassword());
+            String role = (String) roleComboBox.getSelectedItem();
+
+            if (authService.authenticateUser(username, password, role)) {
+                // Successful login
+                JOptionPane.showMessageDialog(this, 
+                    "Login Successful!", 
+                    "Success", 
+                    JOptionPane.INFORMATION_MESSAGE);
+                
+                // Open main application window based on role
+                openMainWindow(role);
+                
+                // Close login form
+                dispose();
+            } else {
+                // Failed login
+                JOptionPane.showMessageDialog(this, 
+                    "Invalid username, password, or role", 
+                    "Login Failed", 
+                    JOptionPane.ERROR_MESSAGE);
+            }
+        } catch (Exception ex) {
+            // Remove specific SQLException catch
             JOptionPane.showMessageDialog(this, 
-                "Invalid username, password, or role", 
-                "Login Failed", 
+                "Error: " + ex.getMessage(), 
+                "Login Error", 
                 JOptionPane.ERROR_MESSAGE);
         }
     }
 
-    private void openMainWindow(String role) throws SQLException {
-        // Different main windows based on user role
-        switch (role) {
-            case "CUSTOMER":
-                 new CustomerDashboard().setVisible(true);
-                break;  
-            case "STAFF":
-                new OwnerDashboard().setVisible(true);
-                break;
-            case "OWNER":
-                new OwnerDashboard().setVisible(true);
-                break;
-            default:
-                // Default fallback
-                JOptionPane.showMessageDialog(this, "Unsupported role");
+    private void openMainWindow(String role) {
+        try {
+            switch (role) {
+                case "CUSTOMER":
+                    new CustomerDashboard().setVisible(true);
+                    break;
+                case "STAFF":
+                case "OWNER":
+                    new OwnerDashboard().setVisible(true);
+                    break;
+                default:
+                    JOptionPane.showMessageDialog(this, "Unsupported role");
+            }
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this,
+                    "Error opening dashboard: " + e.getMessage(),
+                    "Dashboard Error",
+                    JOptionPane.ERROR_MESSAGE);
         }
     }
 
-    private void openRegisterDialog() throws SQLException {
+    private void openRegisterDialog() {
         RegisterDialog registerDialog = new RegisterDialog(this);
         registerDialog.setVisible(true);
     }
 
     public static void main(String[] args) {
-        // Ensure GUI is created on Event Dispatch Thread
         SwingUtilities.invokeLater(() -> {
-            try {
-                new LoginFrame().setVisible(true);
-            } catch (SQLException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
+            new LoginFrame().setVisible(true);
         });
     }
 }

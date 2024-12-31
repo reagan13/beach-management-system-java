@@ -18,7 +18,7 @@ public class User {
         this.fullName = fullName;
     }
 
-    // Constructors, Getters, and Setters
+    // Constructor for registration
     public User(String username, String password, String role) {
         this.username = username;
         this.password = password;

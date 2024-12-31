@@ -1,13 +1,10 @@
 package beachresort;
 
-import java.sql.SQLException;
-
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
 import beachresort.database.DatabaseConnection;
 import beachresort.repositories.BookingRepository;
-// import beachresort.repositories.RoomRepository;
 import beachresort.ui.LoginFrame;
 
 public class Main {
@@ -23,11 +20,12 @@ public class Main {
                 
                 // Launch application
                 SwingUtilities.invokeLater(() -> {
+                    // Remove SQLException catch, use generic Exception
                     try {
-                        new LoginFrame().setVisible(true);
-                    } catch (SQLException e) {
-                        // TODO Auto-generated catch block
-                        e.printStackTrace();
+                        LoginFrame loginFrame = new LoginFrame();
+                        loginFrame.setVisible(true);
+                    } catch (Exception e) {
+                        handleStartupError(e);
                     }
                 });
             } else {
@@ -50,8 +48,6 @@ public class Main {
             BookingRepository bookingRepository = new BookingRepository();
             bookingRepository.verifyTableStructure();
             System.out.println("Booking Repository initialized successfully.");
-            
-        
             
         } catch (Exception e) {
             System.err.println("Error initializing repositories: " + e.getMessage());
