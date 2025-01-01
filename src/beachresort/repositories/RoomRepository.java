@@ -1,86 +1,98 @@
 package beachresort.repositories;
 
-import beachresort.database.DatabaseConnection;
 import beachresort.models.Room;
+import beachresort.database.DatabaseConnection;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class RoomRepository {
-    private static final Logger LOGGER = Logger.getLogger(RoomRepository.class.getName());
+    private Connection connection;
 
-    // Constructor to create table when repository is instantiated
     public RoomRepository() {
-        createRoomsTableIfNotExists();
-    }
-
-    // Method to create rooms table
-    private void createRoomsTableIfNotExists() {
-        String createTableSQL = "CREATE TABLE IF NOT EXISTS rooms (" +
-                "room_number VARCHAR(10) PRIMARY KEY, " +
-                "room_type VARCHAR(50) NOT NULL, " +
-                "capacity INT NOT NULL, " +
-                "price_per_night DECIMAL(10,2) NOT NULL, " +
-                "status VARCHAR(20) DEFAULT 'Available', " +
-                "amenities TEXT" +
-                ")";
-
-        try (Connection conn = DatabaseConnection.getConnection();
-             Statement stmt = conn.createStatement()) {
-            
-            stmt.execute(createTableSQL);
-            System.out.println("Rooms table created or already exists.");
+        try {
+            this.connection = DatabaseConnection.getConnection();
+            createRoomsTableIfNotExists();
         } catch (SQLException e) {
-            LOGGER.log(Level.SEVERE, "Error creating rooms table", e);
+            e.printStackTrace();
         }
     }
 
-    // Add a new room
+    // Create rooms table if not exists
+    private void createRoomsTableIfNotExists() {
+        String createTableQuery = 
+            "CREATE TABLE IF NOT EXISTS rooms (" +
+            "    room_number VARCHAR(10) PRIMARY KEY," +
+            "    room_type ENUM('Standard', 'Deluxe', 'Suite', 'Family') NOT NULL," +
+            "    capacity INT NOT NULL," +
+            "    price_per_night DECIMAL(10, 2) NOT NULL," +
+            "    status ENUM('Available', 'Occupied', 'Maintenance') NOT NULL," +
+            "    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP," +
+            "    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP" +
+            ")";
+
+        try (PreparedStatement pstmt = connection.prepareStatement(createTableQuery)) {
+            pstmt.execute();
+            System.out.println("Rooms table created or already exists.");
+        } catch (SQLException e) {
+            System.err.println("Error creating rooms table: " + e.getMessage());
+        }
+    }
+
+    // Create a new room
     public boolean addRoom(Room room) {
-        String query = "INSERT INTO rooms " +
-                "(room_number, room_type, capacity, price_per_night, status, amenities) " +
-                "VALUES (?, ?, ?, ?, ?, ?)";
+        if (!room.validate()) {
+            System.err.println("Invalid room data");
+            return false;
+        }
 
-        try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(query)) {
+        // Check if room number already exists
+        if (roomExists(room.getRoomNumber())) {
+            System.err.println("Room number already exists");
+            return false;
+        }
 
+        String query = "INSERT INTO rooms (room_number, room_type, capacity, price_per_night, status) VALUES (?, ?, ?, ?, ?)";
+        
+        try (PreparedStatement pstmt = connection.prepareStatement(query)) {
             pstmt.setString(1, room.getRoomNumber());
             pstmt.setString(2, room.getRoomType());
             pstmt.setInt(3, room.getCapacity());
             pstmt.setDouble(4, room.getPricePerNight());
             pstmt.setString(5, room.getStatus());
-            pstmt.setString(6, room.getAmenities());
 
-            return pstmt.executeUpdate() > 0;
+            int rowsAffected = pstmt.executeUpdate();
+            return rowsAffected > 0;
         } catch (SQLException e) {
-            LOGGER.log(Level.SEVERE, "Error adding room", e);
+            System.err.println("Error adding room: " + e.getMessage());
             return false;
         }
     }
 
-    // Update existing room
+    // Update an existing room
     public boolean updateRoom(Room room) {
-        String query = "UPDATE rooms SET " +
-                "room_type = ?, capacity = ?, price_per_night = ?, " +
-                "status = ?, amenities = ? " +
-                "WHERE room_number = ?";
+        if (!room.validate()) {
+            System.err.println("Invalid room data");
+            return false;
+        }
 
-        try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(query)) {
-
+        String query = "UPDATE rooms SET room_type = ?, capacity = ?, price_per_night = ?, status = ? WHERE room_number = ?";
+        
+        try (PreparedStatement pstmt = connection.prepareStatement(query)) {
             pstmt.setString(1, room.getRoomType());
             pstmt.setInt(2, room.getCapacity());
             pstmt.setDouble(3, room.getPricePerNight());
             pstmt.setString(4, room.getStatus());
-            pstmt.setString(5, room.getAmenities());
-            pstmt.setString(6, room.getRoomNumber());
+            pstmt.setString(5, room.getRoomNumber());
 
-            return pstmt.executeUpdate() > 0;
+            int rowsAffected = pstmt.executeUpdate();
+            return rowsAffected > 0;
         } catch (SQLException e) {
-            LOGGER.log(Level.SEVERE, "Error updating room", e);
+            System.err.println("Error updating room: " + e.getMessage());
             return false;
         }
     }
@@ -88,14 +100,14 @@ public class RoomRepository {
     // Delete a room
     public boolean deleteRoom(String roomNumber) {
         String query = "DELETE FROM rooms WHERE room_number = ?";
-
-        try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(query)) {
-
+        
+        try (PreparedStatement pstmt = connection.prepareStatement(query)) {
             pstmt.setString(1, roomNumber);
-            return pstmt.executeUpdate() > 0;
+
+            int rowsAffected = pstmt.executeUpdate();
+            return rowsAffected > 0;
         } catch (SQLException e) {
-            LOGGER.log(Level.SEVERE, "Error deleting room", e);
+            System.err.println("Error deleting room: " + e.getMessage());
             return false;
         }
     }
@@ -104,37 +116,53 @@ public class RoomRepository {
     public List<Room> getAllRooms() {
         List<Room> rooms = new ArrayList<>();
         String query = "SELECT * FROM rooms";
-
-        try (Connection conn = DatabaseConnection.getConnection();
-             Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery(query)) {
-
+        
+        try (PreparedStatement pstmt = connection.prepareStatement(query);
+             ResultSet rs = pstmt.executeQuery()) {
+            
             while (rs.next()) {
                 Room room = new Room(
                     rs.getString("room_number"),
                     rs.getString("room_type"),
                     rs.getInt("capacity"),
                     rs.getDouble("price_per_night"),
-                    rs.getString("status"),
-                    rs.getString("amenities")
+                    rs.getString("status")
                 );
                 rooms.add(room);
             }
         } catch (SQLException e) {
-            LOGGER.log(Level.SEVERE, "Error fetching rooms", e);
+            System.err.println("Error retrieving rooms: " + e.getMessage());
         }
-
+        
         return rooms;
+    }
+
+    // Check if room exists
+    public boolean roomExists(String roomNumber) {
+        String query = "SELECT COUNT(*) FROM rooms WHERE room_number = ?";
+        
+        try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+            pstmt.setString(1, roomNumber);
+            
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1) > 0;
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Error checking room existence: " + e.getMessage());
+        }
+        
+        return false;
     }
 
     // Get room by room number
     public Room getRoomByNumber(String roomNumber) {
         String query = "SELECT * FROM rooms WHERE room_number = ?";
-
-        try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(query)) {
-
+        
+        try (PreparedStatement pstmt = connection.prepareStatement(query)) {
             pstmt.setString(1, roomNumber);
+            
             try (ResultSet rs = pstmt.executeQuery()) {
                 if (rs.next()) {
                     return new Room(
@@ -142,14 +170,39 @@ public class RoomRepository {
                         rs.getString("room_type"),
                         rs.getInt("capacity"),
                         rs.getDouble("price_per_night"),
-                        rs.getString("status"),
-                        rs.getString("amenities")
+                        rs.getString("status")
                     );
                 }
             }
         } catch (SQLException e) {
-                       LOGGER.log(Level.SEVERE, "Error fetching room", e);
+            System.err.println("Error retrieving room: " + e.getMessage());
         }
-        return null; // Return null if room not found
+        
+        return null;
+    }
+
+    // Additional method to get available rooms
+    public List<Room> getAvailableRooms() {
+        List<Room> availableRooms = new ArrayList<>();
+        String query = "SELECT * FROM rooms WHERE status = 'Available'";
+        
+        try (PreparedStatement pstmt = connection.prepareStatement(query);
+             ResultSet rs = pstmt.executeQuery()) {
+            
+            while (rs.next()) {
+                Room room = new Room(
+                    rs.getString("room_number"),
+                    rs.getString("room_type"),
+                    rs.getInt("capacity"),
+                    rs.getDouble("price_per_night"),
+                    rs.getString("status")
+                );
+                availableRooms.add(room);
+            }
+        } catch (SQLException e) {
+            System.err.println("Error retrieving available rooms: " + e.getMessage());
+        }
+        
+        return availableRooms;
     }
 }

@@ -6,17 +6,14 @@ public class Room {
     private int capacity;
     private double pricePerNight;
     private String status;
-    private String amenities;
 
     // Constructor
-    public Room(String roomNumber, String roomType, int capacity, 
-                double pricePerNight, String status, String amenities) {
+    public Room(String roomNumber, String roomType, int capacity, double pricePerNight, String status) {
         this.roomNumber = roomNumber;
         this.roomType = roomType;
         this.capacity = capacity;
         this.pricePerNight = pricePerNight;
         this.status = status;
-        this.amenities = amenities;
     }
 
     // Getters and Setters
@@ -60,15 +57,26 @@ public class Room {
         this.status = status;
     }
 
-    public String getAmenities() {
-        return amenities;
+    // Validate method
+    public boolean validate() {
+        if (roomNumber == null || roomNumber.trim().isEmpty()) {
+            return false;
+        }
+        if (roomType == null || roomType.trim().isEmpty()) {
+            return false;
+        }
+        if (capacity <= 0) {
+            return false;
+        }
+        if (pricePerNight <= 0) {
+            return false;
+        }
+        if (status == null || status.trim().isEmpty()) {
+            return false;
+        }
+        return true;
     }
 
-    public void setAmenities(String amenities) {
-        this.amenities = amenities;
-    }
-
-    // toString method for easy printing
     @Override
     public String toString() {
         return "Room{" +
@@ -77,7 +85,6 @@ public class Room {
                 ", capacity=" + capacity +
                 ", pricePerNight=" + pricePerNight +
                 ", status='" + status + '\'' +
-                ", amenities='" + amenities + '\'' +
                 '}';
     }
 }
