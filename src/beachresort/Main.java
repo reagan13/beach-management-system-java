@@ -46,7 +46,7 @@ public class Main {
             
             // Initialize and verify booking repository
             BookingRepository bookingRepository = new BookingRepository();
-            bookingRepository.verifyTableStructure();
+
             System.out.println("Booking Repository initialized successfully.");
             
         } catch (Exception e) {

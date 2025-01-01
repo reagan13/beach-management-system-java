@@ -394,55 +394,66 @@ public class RoomManagementPanel extends JPanel {
     }
 
     private void showAuditLogs(ActionEvent e) {
-        // Create a dialog to display audit logs
-        JDialog auditLogDialog = new JDialog((Frame)SwingUtilities.getWindowAncestor(this), "Room Management Audit Logs", true);
-        auditLogDialog.setSize(600, 400);
-        auditLogDialog.setLocationRelativeTo(this);
+    // Create a dialog to display audit logs
+    JDialog auditLogDialog = new JDialog((Frame) SwingUtilities.getWindowAncestor(this), "Room Management Audit Logs", true);
+    auditLogDialog.setSize(600, 400);
+    auditLogDialog.setLocationRelativeTo(this);
 
-        // Create table model for audit logs
-        String[] columnNames = {"Room Number", "Action", "Timestamp", "Performed By"};
-        DefaultTableModel auditTableModel = new DefaultTableModel(columnNames, 0);
+    // Create table model for audit logs
+    String[] columnNames = {"Room Number", "Action", "Timestamp", "Performed By"};
+    DefaultTableModel auditTableModel = new DefaultTableModel(columnNames, 0);
 
-        // Fetch audit logs
-        List<RoomAuditLog> auditLogs = auditLogRepository.getAllAuditLogs();
-        
-        // Populate table model
-        for (RoomAuditLog log : auditLogs) {
-            Object[] rowData = {
-                log.getRoomNumber(),
-                log.getActionType(),
-                log.getActionTimestamp().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")),
-                log.getPerformedBy()
-            };
-            auditTableModel.addRow(rowData);
-        }
-
-        // Create table
-        JTable auditLogTable = new JTable(auditTableModel);
-        JScrollPane scrollPane = new JScrollPane(auditLogTable);
-
-        // Add details button
-        JButton detailsButton = new JButton("View Log Details");
-        detailsButton.addActionListener(detailEvent -> {
-            int selectedRow = auditLogTable.getSelectedRow();
-            if (selectedRow != -1) {
-                RoomAuditLog selectedLog = auditLogs.get(selectedRow);
-                JOptionPane.showMessageDialog(
-                    auditLogDialog, 
-                    selectedLog.toString(), 
-                    "Room Audit Log Details", 
-                    JOptionPane.INFORMATION_MESSAGE
-                );
-            }
-        });
-
-        // Layout
-        JPanel mainPanel = new JPanel(new BorderLayout());
-        mainPanel.add(scrollPane, BorderLayout.CENTER);
-        mainPanel.add(detailsButton, BorderLayout.SOUTH);
-
-        auditLogDialog.add(mainPanel);
-        auditLogDialog.setVisible(true);
+    // Fetch audit logs
+    List<RoomAuditLog> auditLogs = auditLogRepository.getAllAuditLogs();
+    
+    // Populate table model
+    for (RoomAuditLog log : auditLogs) {
+        Object[] rowData = {
+            log.getRoomNumber(),
+            log.getActionType(),
+            log.getActionTimestamp().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")),
+            log.getPerformedBy()
+        };
+        auditTableModel.addRow(rowData);
     }
 
+    // Create table
+    JTable auditLogTable = new JTable(auditTableModel);
+    auditLogTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION); // Allow single selection
+    JScrollPane scrollPane = new JScrollPane(auditLogTable);
+
+    // Add details button
+    JButton detailsButton = new JButton("View Log Details");
+    detailsButton.addActionListener(detailEvent -> {
+        int selectedRow = auditLogTable.getSelectedRow();
+        if (selectedRow != -1) {
+            RoomAuditLog selectedLog = auditLogs.get(selectedRow);
+            String logDetails = String.format(
+                "Room Number: %s\nAction: %s\nTimestamp: %s\nPerformed By: %s\nOld Details: %s\nNew Details: %s",
+                selectedLog.getRoomNumber(),
+                selectedLog.getActionType(),
+                selectedLog.getActionTimestamp().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")),
+                selectedLog.getPerformedBy(),
+                selectedLog.getOldDetails() != null ? selectedLog.getOldDetails() : "N/A",
+                selectedLog.getNewDetails() != null ? selectedLog.getNewDetails() : "N/A"
+            );
+            JOptionPane.showMessageDialog(
+                auditLogDialog, 
+                logDetails, 
+                "Room Audit Log Details", 
+                JOptionPane.INFORMATION_MESSAGE
+            );
+        } else {
+            JOptionPane.showMessageDialog(auditLogDialog, "Please select a log entry to view details.", "No Selection", JOptionPane.WARNING_MESSAGE);
+        }
+    });
+
+    // Layout
+    JPanel mainPanel = new JPanel(new BorderLayout());
+    mainPanel.add(scrollPane, BorderLayout.CENTER);
+    mainPanel.add(detailsButton, BorderLayout.SOUTH);
+
+    auditLogDialog.add(mainPanel);
+    auditLogDialog.setVisible(true);
+}
 }

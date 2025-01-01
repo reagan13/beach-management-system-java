@@ -1,213 +1,187 @@
 package beachresort.repositories;
 
-import beachresort.database.DatabaseConnection;
 import beachresort.models.Booking;
+import beachresort.models.RoomAuditLog;
+import beachresort.database.DatabaseConnection;
 
-import java.sql.*;
-import java.time.LocalDate;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-
-    
-
 
 public class BookingRepository {
-    private static final Logger LOGGER = Logger.getLogger(BookingRepository.class.getName());
+    private Connection connection;
+    private RoomAuditLogRepository auditLogRepository; // Reference to the audit log repository
 
-    // Constructor to create table when repository is instantiated
     public BookingRepository() {
-        createBookingsTableIfNotExists();
+        try {
+            this.connection = DatabaseConnection.getConnection();
+            this.auditLogRepository = new RoomAuditLogRepository(); // Initialize the audit log repository
+            createBookingsTableIfNotExists();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
-    // Method to create bookings table
+    // Create bookings table if not exists
     private void createBookingsTableIfNotExists() {
-  
-StringBuilder sqlBuilder = new StringBuilder();
-sqlBuilder.append("CREATE TABLE IF NOT EXISTS bookings (")
-    .append("booking_id VARCHAR(50) PRIMARY KEY,")
-    .append("guest_name VARCHAR(100) NOT NULL,")
-    .append("room_type VARCHAR(50) NOT NULL,")
-    .append("check_in_date DATE NOT NULL,")
-    .append("check_out_date DATE NOT NULL,")
-    .append("total_guests INT NOT NULL,")
-    .append("status VARCHAR(20) DEFAULT 'Confirmed',")
-    .append("contact_number VARCHAR(20),")
-    .append("email VARCHAR(100)")
-    .append(")");
-String createTableSQL = sqlBuilder.toString();
-
-        try (Connection conn = DatabaseConnection.getConnection();
-             Statement stmt = conn.createStatement()) {
-            
-            stmt.execute(createTableSQL);
-            System.out.println("Bookings table created or already exists.");
-        } catch (SQLException e) {
-            LOGGER.log(Level.SEVERE, "Error creating bookings table", e);
-            e.printStackTrace();
-        }
-    }
-  
-    public boolean addBooking(Booking booking) {
-        String query = "INSERT INTO bookings " +
-            "(booking_id, guest_name, room_type, check_in_date, check_out_date, " +
-            "total_guests, status, contact_number, email) " +
-            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
-
-        try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(query)) {
-
-            pstmt.setString(1, booking.getBookingId());
-            pstmt.setString(2, booking.getGuestName());
-            pstmt.setString(3, booking.getRoomType());
-            pstmt.setDate(4, Date.valueOf(booking.getCheckInDate()));
-            pstmt.setDate(5, Date.valueOf(booking.getCheckOutDate()));
-            pstmt.setInt(6, booking.getTotalGuests());
-            pstmt.setString(7, booking.getStatus());
-            pstmt.setString(8, booking.getContactNumber());
-            pstmt.setString(9, booking.getEmail());
-
-            return pstmt.executeUpdate() > 0;
+        String createTableQuery = "CREATE TABLE IF NOT EXISTS bookings (" +
+                "   booking_id INT AUTO_INCREMENT PRIMARY KEY," +
+                "    room_number VARCHAR(10) NOT NULL," +
+                "    customer_name VARCHAR(36) NOT NULL," +
+                "    check_in_date DATE NOT NULL," +
+                "    check_out_date DATE NOT NULL," +
+                "    number_of_guests INT NOT NULL," +
+                "    total_price DECIMAL(10, 2) NOT NULL," +
+                "    status VARCHAR(20) NOT NULL" +
+                ");";
+        try (PreparedStatement pstmt = connection.prepareStatement(createTableQuery)) {
+            pstmt.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
-            return false;
-        }
-    }
-
-    public boolean updateBooking(Booking booking) {
-        String query = "UPDATE bookings SET " +
-            "guest_name = ?, room_type = ?, check_in_date = ?, " +
-            "check_out_date = ?, total_guests = ?, status = ?, " +
-            "contact_number = ?, email = ? " +
-            "WHERE booking_id = ?";
-
-        try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(query)) {
-
-            pstmt.setString(1, booking.getGuestName());
-            pstmt.setString(2, booking.getRoomType());
-            pstmt.setDate(3, Date.valueOf(booking.getCheckInDate()));
-            pstmt.setDate(4, Date.valueOf(booking.getCheckOutDate()));
-            pstmt.setInt(5, booking.getTotalGuests());
-            pstmt.setString(6, booking.getStatus());
-            pstmt.setString(7, booking.getContactNumber());
-            pstmt.setString(8, booking.getEmail());
-            pstmt.setString(9, booking.getBookingId());
-
-            return pstmt.executeUpdate() > 0;
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return false;
-        }
-    }
-
-    public boolean cancelBooking(String bookingId) {
-        String query = "UPDATE bookings SET status = 'Cancelled' WHERE booking_id = ?";
-
-        try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(query)) {
-
-            pstmt.setString(1, bookingId);
-            return pstmt.executeUpdate() > 0;
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return false;
         }
     }
 
     public Booking getBookingById(String bookingId) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getBookingById'");
+        String query = "SELECT * FROM bookings WHERE booking_id = ?";
+        try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+            pstmt.setString(1, bookingId);
+            ResultSet rs = pstmt.executeQuery();
+            if (rs.next()) {
+                return new Booking(
+                        rs.getInt("booking_id"),
+                        rs.getString("room_number"),
+                        rs.getString("customer_name"),
+                        rs.getDate("check_in_date").toLocalDate(),
+                        rs.getDate("check_out_date").toLocalDate(),
+                        rs.getInt("number_of_guests"),
+                        rs.getDouble("total_price"),
+                        rs.getString("status"));
+            }
+        } catch (SQLException e) {
+            System.err.println("Error retrieving booking: " + e.getMessage());
+        }
+        return null; // Return null if no booking is found
     }
-    
-    // Example method with extra error handling
+
+    public boolean addBooking(Booking booking, String performedBy) {
+        if (!booking.validate()) {
+            System.err.println("Invalid booking data");
+            return false;
+        }
+
+        String query = "INSERT INTO bookings ( room_number, customer_name, check_in_date, check_out_date, number_of_guests, total_price, status) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        
+        try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+
+            pstmt.setString(1, booking.getRoomNumber());
+            pstmt.setString(2, booking.getCustomerName());
+            pstmt.setDate(3, java.sql.Date.valueOf(booking.getCheckInDate()));
+            pstmt.setDate(4, java.sql.Date.valueOf(booking.getCheckOutDate()));
+            pstmt.setInt(5, booking.getNumberOfGuests());
+            pstmt.setDouble(6, booking.getTotalPrice());
+            pstmt.setString(7, booking.getStatus());
+            pstmt.executeUpdate();
+
+            // Create an audit log entry for the booking creation
+            RoomAuditLog auditLog = new RoomAuditLog(
+                booking.getRoomNumber(),
+                "ADD", // Action type
+                null, // Old details (none for new booking)
+                booking.toString(), // New details (the booking details)
+                performedBy // The user who performed the action
+            );
+
+            // Log the action in the audit log
+            auditLogRepository.logRoomAction(auditLog);
+            return true;
+        } catch (SQLException e) {
+            System.err.println("Error adding booking: " + e.getMessage());
+            return false;
+        }
+    }
+
     public List<Booking> getAllBookings() {
         List<Booking> bookings = new ArrayList<>();
         String query = "SELECT * FROM bookings";
 
-        try (Connection conn = DatabaseConnection.getConnection();
-             Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery(query)) {
-
+        try (PreparedStatement pstmt = connection.prepareStatement(query);
+             ResultSet rs = pstmt.executeQuery()) {
             while (rs.next()) {
                 Booking booking = new Booking(
-                    rs.getString("booking_id"),
-                    rs.getString("guest_name"),
-                    rs.getString("room_type"),
+                    rs.getInt("booking_id"),
+                    rs.getString("room_number"),
+                    rs.getString("customer_name"),
                     rs.getDate("check_in_date").toLocalDate(),
                     rs.getDate("check_out_date").toLocalDate(),
-                    rs.getInt("total_guests"),
-                    rs.getString("status"),
-                    rs.getString("contact_number"),
-                    rs.getString("email")
+                    rs.getInt("number_of_guests"),
+                    rs.getDouble("total_price"),
+                    rs.getString("status")
                 );
                 bookings.add(booking);
             }
         } catch (SQLException e) {
-            // Check if table exists, if not, create it
-            if (e.getErrorCode() == 1146) { // MySQL error code for "table doesn't exist"
-                createBookingsTableIfNotExists();
-                // Optionally, retry the query
-                return getAllBookings();
-            }
-            
-            LOGGER.log(Level.SEVERE, "Error fetching bookings", e);
             e.printStackTrace();
         }
-
         return bookings;
     }
 
-    // Additional method to verify table structure
-    public void verifyTableStructure() {
-        try (Connection conn = DatabaseConnection.getConnection()) {
-            DatabaseMetaData metaData = conn.getMetaData();
-            
-            // Check table columns
-            try (ResultSet columns = metaData.getColumns(null, null, "bookings", null)) {
-                boolean hasBookingId = false;
-                boolean hasGuestName = false;
-                
-              while (columns.next()) {
-    String columnName = columns.getString("COLUMN_NAME");
-    if ("booking_id".equals(columnName)) {
-        hasBookingId = true;
-    } else if ("guest_name".equals(columnName)) {
-        hasGuestName = true;
-    }
-}
-                
-                if (!hasBookingId || !hasGuestName) {
-                    System.out.println("Table structure is incomplete. Recreating table...");
-                    recreateBookingsTable();
-                }
-            }
+    public boolean updateBooking(Booking booking, String performedBy) {
+        String query = "UPDATE bookings SET room_number = ?, customer_name = ?, check_in_date = ?, check_out_date = ?, number_of_guests = ?, total_price = ?, status = ? WHERE booking_id = ?";
+        
+        try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+            pstmt.setString(1, booking.getRoomNumber());
+            pstmt.setString(2, booking.getCustomerName());
+            pstmt.setDate(3, java.sql.Date.valueOf(booking.getCheckInDate()));
+            pstmt.setDate(4, java.sql.Date.valueOf(booking.getCheckOutDate()));
+            pstmt.setInt(5, booking.getNumberOfGuests());
+            pstmt.setDouble(6, booking.getTotalPrice());
+            pstmt.setString(7, booking.getStatus());
+           
+            pstmt.executeUpdate();
+
+            // Create an audit log entry for the booking update
+            RoomAuditLog auditLog = new RoomAuditLog(
+                booking.getRoomNumber(),
+                "UPDATE", // Action type
+                booking.toString(), // Old details (previous state)
+                booking.toString(), // New details (the updated booking details)
+                performedBy // The user who performed the action
+            );
+
+            // Log the action in the audit log
+            auditLogRepository.logRoomAction(auditLog);
+            return true;
         } catch (SQLException e) {
-            LOGGER.log(Level.SEVERE, "Error verifying table structure", e);
+            System.err.println("Error updating booking: " + e.getMessage());
+            return false;
         }
     }
 
-    // Method to completely recreate the table if needed
-    private void recreateBookingsTable() {
-        try (Connection conn = DatabaseConnection.getConnection();
-             Statement stmt = conn.createStatement()) {
-            
-            // Drop existing table
-            stmt.execute("DROP TABLE IF EXISTS bookings");
-            
-            // Recreate table
-            createBookingsTableIfNotExists();
+    public boolean deleteBooking(String bookingId, String performedBy) {
+        String query = "DELETE FROM bookings WHERE booking_id = ?";
+        
+        try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+            pstmt.setString(1, bookingId);
+            pstmt.executeUpdate();
+
+            // Create an audit log entry for the booking deletion
+            RoomAuditLog auditLog = new RoomAuditLog(
+                null, // Room number is not applicable for deletion
+                "DELETE", // Action type
+                null, // Old details (not applicable for deletion)
+                "Booking with ID: " + bookingId + " has been deleted.", // New details (log the deletion)
+                performedBy // The user who performed the action
+            );
+
+            // Log the action in the audit log
+            auditLogRepository.logRoomAction(auditLog);
+            return true;
         } catch (SQLException e) {
-            LOGGER.log(Level.SEVERE, "Error recreating bookings table", e);
+            System.err.println("Error deleting booking: " + e.getMessage());
+            return false;
         }
     }
-
 }
-
-
-
-
-
-  

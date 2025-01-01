@@ -205,4 +205,24 @@ public class RoomRepository {
         
         return availableRooms;
     }
+
+    public List<String> getAvailableRoomsByType(String roomType) {
+        List<String> availableRooms = new ArrayList<>();
+        System.out.println("Room Type: " + roomType);
+        String query = "SELECT room_number FROM rooms WHERE room_type = ? AND status = 'Available'";
+
+        try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+            pstmt.setString(1, roomType);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    availableRooms.add(rs.getString("room_number"));
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Error retrieving available rooms: " + e.getMessage());
+        }
+
+        System.out.println("Available Rooms: " + availableRooms);
+        return availableRooms; // Return the list of available room numbers
+    }
 }
