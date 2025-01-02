@@ -1,22 +1,38 @@
 package beachresort.models;
 
+import java.sql.Timestamp;
+
 public class Room {
+    private int roomID; // New field for room ID
     private String roomNumber;
     private String roomType;
     private int capacity;
     private double pricePerNight;
     private String status;
+    private Timestamp createdAt; // New field for created timestamp
+    private Timestamp updatedAt; // New field for updated timestamp
 
     // Constructor
-    public Room(String roomNumber, String roomType, int capacity, double pricePerNight, String status) {
+    public Room(int roomID, String roomNumber, String roomType, int capacity, double pricePerNight, String status, Timestamp createdAt, Timestamp updatedAt) {
+        this.roomID = roomID;
         this.roomNumber = roomNumber;
         this.roomType = roomType;
         this.capacity = capacity;
         this.pricePerNight = pricePerNight;
         this.status = status;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
     }
 
     // Getters and Setters
+    public int getRoomID() {
+        return roomID;
+    }
+
+    public void setRoomID(int roomID) {
+        this.roomID = roomID;
+    }
+
     public String getRoomNumber() {
         return roomNumber;
     }
@@ -57,6 +73,22 @@ public class Room {
         this.status = status;
     }
 
+    public Timestamp getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(Timestamp createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public Timestamp getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(Timestamp updatedAt) {
+        this.updatedAt = updatedAt;
+    }
+
     // Validate method
     public boolean validate() {
         if (roomNumber == null || roomNumber.trim().isEmpty()) {
@@ -80,11 +112,14 @@ public class Room {
     @Override
     public String toString() {
         return "Room{" +
-                "roomNumber='" + roomNumber + '\'' +
+                "roomID=" + roomID +
+                ", roomNumber='" + roomNumber + '\'' +
                 ", roomType='" + roomType + '\'' +
                 ", capacity=" + capacity +
                 ", pricePerNight=" + pricePerNight +
                 ", status='" + status + '\'' +
+                ", createdAt=" + createdAt +
+                ", updatedAt=" + updatedAt +
                 '}';
     }
 }
