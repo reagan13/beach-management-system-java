@@ -25,9 +25,11 @@ public class OwnerDashboard extends JFrame {
         // Create main content panel
         mainPanel = new JPanel(new CardLayout());
         mainPanel.add(new OverviewPanel(), "Overview");
+        mainPanel.add(new CheckInOutPanel(), "Check In / Checkout"); // Add the new panel
         mainPanel.add(new ManageBookingsPanel(), "Manage Bookings");
         mainPanel.add(new RoomManagementPanel(), "Room Management");
         mainPanel.add(new StaffManagementPanel(), "Staff Management");
+      
         add(mainPanel, BorderLayout.CENTER);
 
         // Set initial view
@@ -44,7 +46,7 @@ public class OwnerDashboard extends JFrame {
         JPanel titlePanel = new JPanel();
         titlePanel.setLayout(new BoxLayout(titlePanel, BoxLayout.Y_AXIS));
         titlePanel.setBorder(BorderFactory.createEmptyBorder(20, 0, 20, 0));
-        
+
         JLabel titleLabel = new JLabel("Welcome, Owner");
         titleLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         titleLabel.setFont(new Font("Arial", Font.BOLD, 16));
@@ -62,15 +64,19 @@ public class OwnerDashboard extends JFrame {
 
         // Navigation Buttons
         JButton overviewButton = createStyledButton("Overview");
+        JButton checkInOutButton = createStyledButton("Check In / Checkout"); // New button
         JButton manageBookingsButton = createStyledButton("Manage Bookings");
         JButton roomManagementButton = createStyledButton("Room Management");
         JButton staffManagementButton = createStyledButton("Staff Management");
+        
 
         // Add Navigation Buttons
         navigationPanel.add(overviewButton, gbc);
+        navigationPanel.add(checkInOutButton, gbc); // Add the new button
         navigationPanel.add(manageBookingsButton, gbc);
         navigationPanel.add(roomManagementButton, gbc);
         navigationPanel.add(staffManagementButton, gbc);
+    
 
         // Bottom Panel for Logout Button
         JPanel bottomPanel = new JPanel(new GridBagLayout());
@@ -90,6 +96,7 @@ public class OwnerDashboard extends JFrame {
         manageBookingsButton.addActionListener(e -> showPanel("Manage Bookings"));
         roomManagementButton.addActionListener(e -> showPanel("Room Management"));
         staffManagementButton.addActionListener(e -> showPanel("Staff Management"));
+        checkInOutButton.addActionListener(e -> showPanel("Check In / Checkout")); // Action for new button
         logoutButton.addActionListener(e -> handleLogout());
 
         // Combine Panels
