@@ -30,7 +30,7 @@ public class ManageBookingsPanel extends JPanel {
         add(bookingsLabel, BorderLayout.NORTH);
 
         // Create table model
-        String[] columnNames = {"Booking ID", "Customer Name", "Room Type", "Check-in Date", "Check-out Date", "Status"};
+        String[] columnNames = {"Booking ID", "Customer Name", "Room Number", "Check-in Date", "Check-out Date", "Status"};
         tableModel = new DefaultTableModel(columnNames, 0);
         bookingsTable = new JTable(tableModel);
         
@@ -69,7 +69,7 @@ public class ManageBookingsPanel extends JPanel {
         List<Booking> bookings = bookingRepository.getAllBookings();
         for (Booking booking : bookings) {
             Object[] rowData = {
-                booking.getBookingId(),
+                booking.getBookingID(),
                 booking.getCustomerName(), // Assuming customer ID is used as the name for simplicity
                 booking.getRoomNumber(), // Assuming room number is used as the room type for simplicity
                 booking.getCheckInDate(),
@@ -221,23 +221,28 @@ public class ManageBookingsPanel extends JPanel {
         
             try {
                 // Create a new booking object
+                
                 Booking newBooking = new Booking(
                         
                         (String) availableRoomsCombo.getSelectedItem(), // Selected room from available rooms
                         customerNameField.getText(),
                         LocalDate.parse(checkInField.getText()),
-                            LocalDate.parse(checkOutField.getText()),
+                         LocalDate.parse(checkOutField.getText()),
                         1, // Placeholder for number of guests
                         Double.parseDouble(priceField.getText()), // Use the price from the price field
                         statusCombo.getSelectedItem().toString() // Status
                 );
 
                 // Save the booking using the repository
-                bookingRepository.addBooking(newBooking, "User    "); // Pass the user who performed the action
+                boolean isSuccess = bookingRepository.addBooking(newBooking, "User    "); // Pass the user who performed the action
+                if (isSuccess) {
+                    roomRepository.updateRoomStatusBasedOnCurrent( (String) availableRoomsCombo.getSelectedItem(),  statusCombo.getSelectedItem().toString()); // Update room status to Booked
+                    JOptionPane.showMessageDialog(addBookingDialog, "Booking Added Successfully!");
+                    addBookingDialog.dispose();
+                }
                 loadBookings(); // Refresh the table to show the new booking
 
-                JOptionPane.showMessageDialog(addBookingDialog, "Booking Added Successfully!");
-                addBookingDialog.dispose();
+              
             } catch (Exception ex) {
                 JOptionPane.showMessageDialog(addBookingDialog, "Error adding booking: " + ex.getMessage());
             }
@@ -292,11 +297,10 @@ public class ManageBookingsPanel extends JPanel {
         JTextField customerNameField = new JTextField(booking.getCustomerName());
         panel.add(customerNameField);
 
-        panel.add(new JLabel("Room Type:"));
-        String[] roomTypes = {"Standard", "Deluxe", "Suite"};
-        JComboBox<String> roomTypeCombo = new JComboBox<>(roomTypes);
-        roomTypeCombo.setSelectedItem(booking.getRoomNumber());
-        panel.add(roomTypeCombo);
+        panel.add(new JLabel("Room Number:"));
+        JTextField roomNumber = new JTextField(booking.getRoomNumber());
+        roomNumber.setEditable(false); // Make the text field non-editable
+        panel.add(roomNumber);
 
         panel.add(new JLabel("Check-in Date (yyyy-MM-dd):"));
         JTextField checkInField = new JTextField(booking.getCheckInDate().toString());
@@ -315,9 +319,10 @@ public class ManageBookingsPanel extends JPanel {
         JButton saveButton = new JButton("Save");
         saveButton.addActionListener(saveEvent -> {
             try {
+                  
                 // Update the booking object
+                booking.setBookingId(bookingId);
                 booking.setCustomerName(customerNameField.getText());
-                booking.setRoomNumber(roomTypeCombo.getSelectedItem().toString());
                 booking.setCheckInDate(LocalDate.parse(checkInField.getText()));
                 booking.setCheckOutDate(LocalDate.parse(checkOutField.getText()));
                 booking.setStatus(statusCombo.getSelectedItem().toString());
@@ -326,6 +331,7 @@ public class ManageBookingsPanel extends JPanel {
                 bookingRepository.updateBooking(booking, "User "); // Pass the user who performed the action
                 loadBookings(); // Refresh the table to show the updated booking
 
+                roomRepository.updateRoomStatusBasedOnCurrent( booking.getRoomNumber(),  statusCombo.getSelectedItem().toString()); // Update room status to Booked
                 JOptionPane.showMessageDialog(editBookingDialog, "Booking Updated Successfully!");
                 editBookingDialog.dispose();
             } catch (Exception ex) {
@@ -348,15 +354,19 @@ public class ManageBookingsPanel extends JPanel {
             JOptionPane.showMessageDialog(this, "Please select a booking to delete");
             return;
         }
+        int bookingId = (Integer) tableModel.getValueAt(selectedRow, 0);
+        Booking booking = bookingRepository.getBookingById(bookingId);
 
-        String bookingId = (String) tableModel.getValueAt(selectedRow, 0);
         int confirm = JOptionPane.showConfirmDialog(this, 
             "Are you sure you want to delete this booking?", 
             "Confirm Deletion", 
             JOptionPane.YES_NO_OPTION);
         
         if (confirm == JOptionPane.YES_OPTION) {
+            roomRepository.updateRoomStatusBasedOnCurrent(booking.getRoomNumber(), "Cancelled"); // Update room status to Booked
+
             bookingRepository.deleteBooking(bookingId, "User  "); // Pass the user who performed the action
+
             loadBookings(); // Refresh the table to reflect the deletion
             JOptionPane.showMessageDialog(this, "Booking deleted successfully");
         }

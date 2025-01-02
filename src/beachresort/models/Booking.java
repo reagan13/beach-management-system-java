@@ -3,7 +3,7 @@ package beachresort.models;
 import java.time.LocalDate;
 
 public class Booking {
-    private int bookingId; // Unique identifier for the booking
+    private int bookingID; // Unique identifier for the booking
     private String roomNumber; // Room number associated with the booking
     private String customerName; // ID of the customer making the booking
     private LocalDate checkInDate; // Check-in date
@@ -26,8 +26,8 @@ public class Booking {
       }
     
     // Constructor
-    public Booking(int bookingId, String roomNumber, String customerName, LocalDate checkInDate, LocalDate checkOutDate, int numberOfGuests, double totalPrice, String status) {
-        this.bookingId = bookingId;
+    public Booking(int bookingID, String roomNumber, String customerName, LocalDate checkInDate, LocalDate checkOutDate, int numberOfGuests, double totalPrice, String status) {
+        this.bookingID = bookingID;
         this.roomNumber = roomNumber;
         this.customerName = customerName;
         this.checkInDate = checkInDate;
@@ -39,12 +39,12 @@ public class Booking {
 
     // Getters and Setters
 
-    public int getBookingId() {
-        return bookingId;
+    public int getBookingID() {
+        return bookingID;
     }
 
     public void setBookingId(int bookingId) {
-        this.bookingId = bookingId;
+        this.bookingID = bookingId;
     }
 
     public String getRoomNumber() {
@@ -118,7 +118,7 @@ public class Booking {
     @Override
     public String toString() {
         return "Booking{" +
-                "bookingId='" + bookingId + '\'' +
+                "bookingID='" + bookingID + '\'' +
                 ", roomNumber='" + roomNumber + '\'' +
                 ", customerName='" + customerName + '\'' +
                 ", checkInDate=" + checkInDate +

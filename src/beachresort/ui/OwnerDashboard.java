@@ -25,7 +25,7 @@ public class OwnerDashboard extends JFrame {
         // Create main content panel
         mainPanel = new JPanel(new CardLayout());
         mainPanel.add(new OverviewPanel(), "Overview");
-        // mainPanel.add(new ManageBookingsPanel(), "Manage Bookings");
+        mainPanel.add(new ManageBookingsPanel(), "Manage Bookings");
         mainPanel.add(new RoomManagementPanel(), "Room Management");
         mainPanel.add(new StaffManagementPanel(), "Staff Management");
         add(mainPanel, BorderLayout.CENTER);

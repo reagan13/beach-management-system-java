@@ -131,14 +131,13 @@ public class RoomRepository {
             try (ResultSet rs = pstmt.executeQuery()) {
                 if (rs.next()) {
                     return new Room(
-                        rs.getString("room_number"),
-                        rs.getString("room_type"),
-                        rs.getInt("capacity"),
-                        rs.getDouble("price_per_night"),
-                        rs.getString("status"),
-                        rs.getTimestamp("created_at"),
-                        rs.getTimestamp("updated_at")
-                    );
+                            rs.getString("room_number"),
+                            rs.getString("room_type"),
+                            rs.getInt("capacity"),
+                            rs.getDouble("price_per_night"),
+                            rs.getString("status"),
+                            rs.getTimestamp("created_at"),
+                            rs.getTimestamp("updated_at"));
                 }
             }
         } catch (SQLException e) {
@@ -146,7 +145,44 @@ public class RoomRepository {
         }
         return null;
     }
+    public boolean updateRoomStatus(String roomNumber, String newStatus) {
+        String query = "UPDATE rooms SET status = ? WHERE room_number = ?";
+        
+        try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+            pstmt.setString(1, newStatus); // Set the new status
+            pstmt.setString(2, roomNumber); // Set the room number for the WHERE clause
 
+            int rowsAffected = pstmt.executeUpdate(); // Execute the update
+            return rowsAffected > 0; // Return true if at least one row was updated
+        } catch (SQLException e) {
+            System.err.println("Error updating room status: " + e.getMessage());
+            return false; // Return false if there was an error
+        }
+    }
+
+    public boolean updateRoomStatusBasedOnCurrent(String roomNumber, String currentStatus ) {
+        String newStatus;
+
+        // Determine the new status based on the current status
+        switch (currentStatus.toLowerCase()) {
+            case "confirmed":
+            case "pending":
+                newStatus = "Occupied";
+                break;
+            case "cancelled":
+                newStatus = "Available";
+                break;
+            default:
+                newStatus = "Available"; // Default status
+                break;
+        }
+        // Log the new status for debugging
+        System.out.println("Updating room status to: " + newStatus);
+    
+        // Now update the room status in the database
+        return updateRoomStatus(roomNumber, newStatus);
+    }
+    
     public boolean roomExists(String roomNumber) {
         String query = "SELECT COUNT(*) FROM rooms WHERE room_number = ?";
         try (PreparedStatement pstmt = connection.prepareStatement(query)) {
@@ -161,4 +197,22 @@ public class RoomRepository {
         }
         return false;
     }
+    public List<String> getAvailableRoomsByType(String roomType) {
+        List<String> availableRooms = new ArrayList<>();
+        System.out.println("Room Type: " + roomType);
+        String query = "SELECT room_number FROM rooms WHERE room_type = ? AND status = 'Available'";
+        try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+            pstmt.setString(1, roomType);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    availableRooms.add(rs.getString("room_number"));
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Error retrieving available rooms: " + e.getMessage());
+        }
+        System.out.println("Available Rooms: " + availableRooms);
+        return availableRooms; // Return the list of available room numbers
+    }
+
 }
