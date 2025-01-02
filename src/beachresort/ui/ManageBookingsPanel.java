@@ -182,7 +182,7 @@ public class ManageBookingsPanel extends JPanel {
         panel.add(new JLabel("Status:"), gbc);
 
         gbc.gridx = 1; // Second column
-        String[] statuses = { "Confirmed", "Pending", "Cancelled" };
+        String[] statuses = {"Pending", "Cancelled" };
         JComboBox<String> statusCombo = new JComboBox<>(statuses);
         panel.add(statusCombo, gbc);
 

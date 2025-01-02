@@ -96,9 +96,62 @@ public class BookingRepository {
         String query = "SELECT * FROM bookings";
 
         try (PreparedStatement pstmt = connection.prepareStatement(query);
-             ResultSet rs = pstmt.executeQuery()) {
+                ResultSet rs = pstmt.executeQuery()) {
             while (rs.next()) {
                 Booking booking = new Booking(
+                        rs.getInt("bookingID"),
+                        rs.getString("room_number"),
+                        rs.getString("customer_name"),
+                        rs.getDate("check_in_date").toLocalDate(),
+                        rs.getDate("check_out_date").toLocalDate(),
+                        rs.getInt("number_of_guests"),
+                        rs.getDouble("total_price"),
+                        rs.getString("status"));
+                bookings.add(booking);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return bookings;
+    }
+
+    public List<Integer> getAllBookingIDs() {
+        List<Integer> bookingIDs = new ArrayList<>();
+        String query = "SELECT bookingID FROM bookings where status = 'Pending'";
+
+        try (PreparedStatement pstmt = connection.prepareStatement(query);
+                ResultSet rs = pstmt.executeQuery()) {
+            while (rs.next()) {
+                bookingIDs.add(rs.getInt("bookingID"));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return bookingIDs;
+    }
+    public boolean updateBookingStatusToConfirmed(int bookingID) {
+    String query = "UPDATE bookings SET status = ? WHERE bookingID = ?";
+    try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+        pstmt.setString(1, "Confirmed"); // Set the status to "Confirmed"
+        pstmt.setInt(2, bookingID); // Set the booking ID for the WHERE clause
+
+        int rowsAffected = pstmt.executeUpdate();
+        return rowsAffected > 0; // Return true if at least one row was updated
+    } catch (SQLException e) {
+        System.err.println("Error updating booking status: " + e.getMessage());
+        return false;
+    }
+}
+
+    public Booking getBookingByID(int bookingID) {
+        Booking booking = null;
+        String query = "SELECT * FROM bookings WHERE bookingID = ?";
+
+        try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+            pstmt.setInt(1, bookingID);
+            ResultSet rs = pstmt.executeQuery();
+            if (rs.next()) {
+                booking = new Booking(
                     rs.getInt("bookingID"),
                     rs.getString("room_number"),
                     rs.getString("customer_name"),
@@ -108,12 +161,11 @@ public class BookingRepository {
                     rs.getDouble("total_price"),
                     rs.getString("status")
                 );
-                bookings.add(booking);
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return bookings;
+        return booking;
     }
 
     public boolean updateBooking(Booking booking, String performedBy) {

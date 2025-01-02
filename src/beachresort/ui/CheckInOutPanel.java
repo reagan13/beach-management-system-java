@@ -36,7 +36,7 @@ public class CheckInOutPanel extends JPanel {
         add(titleLabel, BorderLayout.NORTH);
 
         // Table setup
-        String[] columnNames = {"Check In ID", "Customer Name", "Check In Date", "Check Out Date", "Check In Type", "Status"};
+        String[] columnNames = {"Check In ID", "Customer Name", "Check In Date", "Check Out Date","Room Number", "Check In Type", "Status"};
         tableModel = new DefaultTableModel(columnNames, 0);
         checkInOutTable = new JTable(tableModel);
         JScrollPane scrollPane = new JScrollPane(checkInOutTable);
@@ -74,6 +74,7 @@ public class CheckInOutPanel extends JPanel {
                     checkInOut.getCustomerName(),
                     checkInOut.getCheckInDate(),
                     checkInOut.getCheckOutDate(),
+                    checkInOut.getRoomNumber(),
                     checkInOut.getCheckInType(),
                     checkInOut.getStatus()
             };
@@ -204,7 +205,7 @@ public class CheckInOutPanel extends JPanel {
             // Get selected room number and date range
             // Get selected room number and date range
             String selectedRoomNumber = (String) availableRoomsCombo.getSelectedItem();
-           
+
             // Check for overlapping bookings
             if (checkForOverlappingBookings(selectedRoomNumber, today, tomorrow)) {
                 JOptionPane.showMessageDialog(addBookingDialog,
@@ -226,10 +227,10 @@ public class CheckInOutPanel extends JPanel {
                         statusCombo.getSelectedItem().toString() // Status
                 );
                 CheckInOut checkInOut = new CheckInOut(
-                        0, // ID will be auto-generated
                         customerNameField.getText(),
                         today,
                         tomorrow,
+                        (String) availableRoomsCombo.getSelectedItem(),
                         "Walk-In",
                         "Checked In" // Default status
                 );
@@ -262,67 +263,172 @@ public class CheckInOutPanel extends JPanel {
         addBookingDialog.setVisible(true);
     }
 
-    
     private void showCheckInByBookingDialog(ActionEvent e) {
-        JDialog checkInByBookingDialog = new JDialog((Frame) SwingUtilities.getWindowAncestor(this), "Check In by Booking", true);
-        checkInByBookingDialog.setSize(400, 400);
-        checkInByBookingDialog.setLocationRelativeTo(this);
+    JDialog checkInByBookingDialog = new JDialog((Frame) SwingUtilities.getWindowAncestor(this), "Check In by Booking", true);
+    checkInByBookingDialog.setSize(400, 500);
+    checkInByBookingDialog.setLocationRelativeTo(this);
 
-        // Use GridBagLayout for more control over component placement
-        JPanel panel = new JPanel(new GridBagLayout());
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.insets = new Insets(10, 10, 10, 10); // Add some padding
+    // Use GridBagLayout for better control over component placement
+    JPanel panel = new JPanel(new GridBagLayout());
+    GridBagConstraints gbc = new GridBagConstraints();
+    gbc.fill = GridBagConstraints.HORIZONTAL;
+    gbc.insets = new Insets(10, 10, 10, 10); // Add some padding
 
-        // Row 1: Select Booking ID
-        gbc.gridx = 0; // First column
-        gbc.gridy = 0; // First row
-        panel.add(new JLabel("Select Booking ID:"), gbc);
+    // Row 1: Select Booking ID
+    gbc.gridx = 0; // First column
+    gbc.gridy = 0; // First row
+    gbc.weightx = 1.0;
+    panel.add(new JLabel("Select Booking ID:"), gbc);
 
-        gbc.gridx = 1; // Second column
-        JComboBox<Booking> bookingComboBox = new JComboBox<>(bookingRepository.getAllBookings().toArray(new Booking[0]));
-        panel.add(bookingComboBox, gbc);
+    gbc.gridx = 1; // Second column
+    JComboBox<Integer> bookingIDComboBox = new JComboBox<>(
+            bookingRepository.getAllBookingIDs().toArray(new Integer[0]));
+    panel.add(bookingIDComboBox, gbc);
 
-        // Row 2: Save Button
-        gbc.gridx = 0; // First column
-        gbc.gridy = 1; // Second row
-        gbc.gridwidth = 2; // Span both columns
-        JButton saveButton = new JButton("Check In");
-        saveButton.addActionListener(saveEvent -> {
-            Booking selectedBooking = (Booking) bookingComboBox.getSelectedItem();
+    // Row 2: Room Number
+    gbc.gridx = 0; // First column
+    gbc.gridy = 1; // Second row
+    panel.add(new JLabel("Room Number:"), gbc);
+
+    gbc.gridx = 1; // Second column
+    JTextField roomNumberField = new JTextField();
+    roomNumberField.setEditable(false); // Make it read-only
+    panel.add(roomNumberField, gbc);
+
+    // Row 3: Customer Name
+    gbc.gridx = 0; // First column
+    gbc.gridy = 2; // Third row
+    panel.add(new JLabel("Customer Name:"), gbc);
+
+    gbc.gridx = 1; // Second column
+    JTextField customerNameField = new JTextField();
+    customerNameField.setEditable(false); // Make it read-only
+    panel.add(customerNameField, gbc);
+
+    // Row 4: Check-in Date
+    gbc.gridx = 0; // First column
+    gbc.gridy = 3; // Fourth row
+    panel.add(new JLabel("Check-in Date:"), gbc);
+
+    gbc.gridx = 1; // Second column
+    JTextField checkInDateField = new JTextField();
+    checkInDateField.setEditable(false); // Make it read-only
+    panel.add(checkInDateField, gbc);
+
+    // Row 5: Check-out Date
+    gbc.gridx = 0; // First column
+    gbc.gridy = 4; // Fifth row
+    panel.add(new JLabel("Check-out Date:"), gbc);
+
+    gbc.gridx = 1; // Second column
+    JTextField checkOutDateField = new JTextField();
+    checkOutDateField.setEditable(false); // Make it read-only
+    panel.add(checkOutDateField, gbc);
+
+    // Row 6: Number of Guests
+    gbc.gridx = 0; // First column
+    gbc.gridy = 5; // Sixth row
+    panel.add(new JLabel("Number of Guests:"), gbc);
+
+    gbc.gridx = 1; // Second column
+    JTextField numberOfGuestsField = new JTextField();
+    numberOfGuestsField.setEditable(false); // Make it read-only
+    panel.add(numberOfGuestsField, gbc);
+
+    // Row 7: Total Price
+    gbc.gridx = 0; // First column
+    gbc.gridy = 6; // Seventh row
+    panel.add(new JLabel("Total Price:"), gbc);
+
+    gbc.gridx = 1; // Second column
+    JTextField totalPriceField = new JTextField();
+    totalPriceField.setEditable(false); // Make it read-only
+    panel.add(totalPriceField, gbc);
+
+    // Add an action listener to populate fields when a booking ID is selected
+    bookingIDComboBox.addActionListener(actionEvent -> {
+        Integer selectedBookingID = (Integer) bookingIDComboBox.getSelectedItem();
+        if (selectedBookingID != null) {
+            Booking selectedBooking = bookingRepository.getBookingByID(selectedBookingID);
             if (selectedBooking != null) {
+                roomNumberField.setText(selectedBooking.getRoomNumber());
+                customerNameField.setText(selectedBooking.getCustomerName());
+                checkInDateField.setText(selectedBooking.getCheckInDate().toString());
+                checkOutDateField.setText(selectedBooking.getCheckOutDate().toString());
+                checkOutDateField.setText(selectedBooking.getCheckOutDate().toString());
+                numberOfGuestsField.setText(String.valueOf(selectedBooking.getNumberOfGuests()));
+                totalPriceField.setText(String.valueOf(selectedBooking.getTotalPrice()));
+            }
+        }
+    });
+
+    // Row 8: Status
+    gbc.gridx = 0; // First column
+    gbc.gridy = 7; // Eighth row
+    panel.add(new JLabel("Status:"), gbc);
+
+    gbc.gridx = 1; // Second column
+    JTextField statusField = new JTextField("Confirmed");
+    statusField.setEditable(false); // Make it read-only
+    panel.add(statusField, gbc);
+
+    // Row 9: Save Button
+    gbc.gridx = 0; // First column
+    gbc.gridy = 8; // Ninth row
+    gbc.gridwidth = 2; // Span both columns
+    JButton saveButton = new JButton("Save");
+    saveButton.addActionListener(saveEvent -> {
+        Integer selectedBookingID = (Integer) bookingIDComboBox.getSelectedItem();
+        if (selectedBookingID == null) {
+            JOptionPane.showMessageDialog(checkInByBookingDialog, "Please select a booking ID.", "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        Booking booking = bookingRepository.getBookingByID(selectedBookingID);
+        if (booking == null) {
+            JOptionPane.showMessageDialog(checkInByBookingDialog, "Booking not found.", "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        try {
+            boolean isUpdated = bookingRepository.updateBookingStatusToConfirmed(selectedBookingID);
+            if (isUpdated) {
                 CheckInOut checkInOut = new CheckInOut(
                         0, // ID will be auto-generated
-                        selectedBooking.getCustomerName(),
-                        selectedBooking.getCheckInDate(),
-                        selectedBooking.getCheckOutDate(),
+                        booking.getCustomerName(),
+                        booking.getCheckInDate(),
+                        booking.getCheckOutDate(),
+                        roomNumberField.getText(),
                         "Booking",
                         "Checked In" // Default status
                 );
 
-                // Add the check-in record to the repository
-                if (checkInOutRepository.addCheckInOut(checkInOut)) {
-                    loadCheckInOuts(); // Refresh the table to show the new check-in
-                    checkInByBookingDialog.dispose(); // Close the dialog
-                } else {
-                    JOptionPane.showMessageDialog(this, "Failed to check in from booking.");
-                }
+                checkInOutRepository.addCheckInOut(checkInOut); // Save the check-in record
+                JOptionPane.showMessageDialog(checkInByBookingDialog, "Booking status updated to Confirmed!", "Success", JOptionPane.INFORMATION_MESSAGE);
+                loadCheckInOuts(); // Refresh the table to show the new booking
             } else {
-                JOptionPane.showMessageDialog(this, "Please select a booking.");
+                JOptionPane.showMessageDialog(checkInByBookingDialog, "Failed to update booking status.", "Error", JOptionPane.ERROR_MESSAGE);
             }
-        });
-        panel.add(saveButton , gbc);
+            JOptionPane.showMessageDialog(checkInByBookingDialog, "Check-in successful!", "Success", JOptionPane.INFORMATION_MESSAGE);
+            checkInByBookingDialog.dispose(); // Close dialog
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(checkInByBookingDialog, "Error during check-in: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    });
+    panel.add(saveButton, gbc);
 
-        // Row 3: Cancel Button
-        gbc.gridy = 2; // Third row
-        JButton cancelButton = new JButton("Cancel");
-        cancelButton.addActionListener(cancelEvent -> checkInByBookingDialog.dispose());
-        panel.add(cancelButton, gbc);
+    // Row 10: Cancel Button
+    gbc.gridy = 9; // Tenth row
+    JButton cancelButton = new JButton("Cancel");
+    cancelButton.addActionListener(cancelEvent -> checkInByBookingDialog.dispose());
+    panel.add(cancelButton, gbc);
 
-        checkInByBookingDialog.add(panel);
-        checkInByBookingDialog.setVisible(true);
-    }
+    checkInByBookingDialog.add(panel);
+    checkInByBookingDialog.setVisible(true);
+}
 
+    
+    
     private void checkOutBooking(ActionEvent e) {
         int selectedRow = checkInOutTable.getSelectedRow();
         if (selectedRow == -1) {
@@ -341,8 +447,10 @@ public class CheckInOutPanel extends JPanel {
         if (checkInOut != null) {
             checkInOut.setStatus("OUT"); // Update status to OUT
             checkInOutRepository.updateCheckInOut(checkInOut); // Save changes to repository
+
+            roomRepository.updateRoomStatus(checkInOut.getRoomNumber(), "Maintenance"); // Update room status to Maintenance
             loadCheckInOuts(); // Refresh the table to show updated status
-            JOptionPane.showMessageDialog(this, "Checked out successfully.");
+            
         } else {
             JOptionPane.showMessageDialog(this, "Error retrieving check-in record.");
         }
@@ -391,7 +499,8 @@ public class CheckInOutPanel extends JPanel {
 
         return false; // No overlaps found
     }
-     public List<Booking> getExistingBookingsForRoom(String roomNumber) {
+     
+    public List<Booking> getExistingBookingsForRoom(String roomNumber) {
         List<Booking> existingBookings = new ArrayList<>();
         List<Booking> allBookings = bookingRepository.getAllBookings(); // Retrieve all bookings
 

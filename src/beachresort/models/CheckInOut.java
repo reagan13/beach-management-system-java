@@ -7,16 +7,30 @@ public class CheckInOut {
     private String customerName; // Name of the customer
     private LocalDate checkInDate; // Check-in date
     private LocalDate checkOutDate; // Check-out date
+    private String roomNumber;
     private String checkInType; // Type of check-in (e.g., "walk-in" or "booking")
     private String status; // Status of the check-in/check-out record (e.g., "Checked In", "Checked Out")
 
     // Constructor
     public CheckInOut(int id, String customerName, LocalDate checkInDate, LocalDate checkOutDate, String checkInType,
+            String roomNumber,
             String status) {
         this.id = id;
         this.customerName = customerName;
         this.checkInDate = checkInDate;
         this.checkOutDate = checkOutDate;
+        this.roomNumber = roomNumber;
+        this.checkInType = checkInType;
+        this.status = status;
+    }
+      public CheckInOut(String customerName, LocalDate checkInDate, LocalDate checkOutDate, String checkInType,
+            String roomNumber,
+            String status) {
+    
+        this.customerName = customerName;
+        this.checkInDate = checkInDate;
+        this.checkOutDate = checkOutDate;
+        this.roomNumber = roomNumber;
         this.checkInType = checkInType;
         this.status = status;
     }
@@ -53,6 +67,14 @@ public class CheckInOut {
 
     public void setCheckOutDate(LocalDate checkOutDate) {
         this.checkOutDate = checkOutDate;
+    }
+
+    public String getRoomNumber() {
+        return roomNumber;
+    }
+
+    public void setRoomNumber(String roomNumber) {
+        this.roomNumber = roomNumber;
     }
 
     public String getCheckInType() {
