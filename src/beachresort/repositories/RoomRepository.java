@@ -108,7 +108,6 @@ public class RoomRepository {
              ResultSet rs = pstmt.executeQuery()) {
             while (rs.next()) {
                 Room room = new Room(
-                    rs.getInt("roomID"),
                     rs.getString("room_number"),
                     rs.getString("room_type"),
                     rs.getInt("capacity"),
@@ -132,7 +131,6 @@ public class RoomRepository {
             try (ResultSet rs = pstmt.executeQuery()) {
                 if (rs.next()) {
                     return new Room(
-                        rs.getInt("roomID"),
                         rs.getString("room_number"),
                         rs.getString("room_type"),
                         rs.getInt("capacity"),

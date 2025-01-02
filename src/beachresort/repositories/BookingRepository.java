@@ -86,7 +86,8 @@ public class BookingRepository {
             pstmt.executeUpdate();
 
             // Create an audit log entry for the booking creation
-            RoomAuditLog auditLog = new RoomAuditLog(
+            AuditLog auditLog = new AuditLog(
+                
                 booking.getRoomNumber(),
                 "ADD", // Action type
                 null, // Old details (none for new booking)
@@ -95,7 +96,7 @@ public class BookingRepository {
             );
 
             // Log the action in the audit log
-            auditLogRepository.logRoomAction(auditLog);
+            auditLogRepository.logAction(auditLog);
             return true;
         } catch (SQLException e) {
             System.err.println("Error adding booking: " + e.getMessage());

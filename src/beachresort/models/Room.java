@@ -13,8 +13,7 @@ public class Room {
     private Timestamp updatedAt; // New field for updated timestamp
 
     // Constructor
-    public Room(int roomID, String roomNumber, String roomType, int capacity, double pricePerNight, String status, Timestamp createdAt, Timestamp updatedAt) {
-        this.roomID = roomID;
+    public Room(String roomNumber, String roomType, int capacity, double pricePerNight, String status, Timestamp createdAt, Timestamp updatedAt) {
         this.roomNumber = roomNumber;
         this.roomType = roomType;
         this.capacity = capacity;

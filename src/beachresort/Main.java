@@ -45,7 +45,7 @@ public class Main {
             System.out.println("Initializing Repositories...");
             
             // Initialize and verify booking repository
-            BookingRepository bookingRepository = new BookingRepository();
+            // BookingRepository bookingRepository = new BookingRepository();
 
             System.out.println("Booking Repository initialized successfully.");
             

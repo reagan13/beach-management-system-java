@@ -1,28 +1,23 @@
 package beachresort.ui;
 
 import beachresort.models.Room;
-import beachresort.models.RoomAuditLog;
 import beachresort.repositories.RoomRepository;
-import beachresort.repositories.RoomAuditLogRepository;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
-
 public class RoomManagementPanel extends JPanel {
     private JTable roomsTable;
     private DefaultTableModel tableModel;
     private RoomRepository roomRepository;
-    private RoomAuditLogRepository auditLogRepository;
+   
 
 
     public RoomManagementPanel() {
         // Initialize repository
         roomRepository = new RoomRepository();
-        auditLogRepository = new RoomAuditLogRepository();
 
         // Set layout
         setLayout(new BorderLayout());
@@ -55,14 +50,12 @@ public class RoomManagementPanel extends JPanel {
         JButton editRoomButton = new JButton("Edit Room");
         JButton deleteRoomButton = new JButton("Delete Room");
         JButton refreshButton = new JButton("Refresh");
-        JButton auditLogButton = new JButton("View Audit Logs");
 
         
         buttonPanel.add(addRoomButton);
         buttonPanel.add(editRoomButton);
         buttonPanel.add(deleteRoomButton);
         buttonPanel.add(refreshButton);
-        buttonPanel.add(auditLogButton);
 
         add(buttonPanel, BorderLayout.SOUTH);
 
@@ -71,7 +64,6 @@ public class RoomManagementPanel extends JPanel {
         editRoomButton.addActionListener(this::editRoom);
         deleteRoomButton.addActionListener(this::deleteRoom);
         refreshButton.addActionListener(e -> loadRooms());
-        auditLogButton.addActionListener(this::showAuditLogs);
 
         // Initial load of rooms
         loadRooms();
@@ -120,27 +112,19 @@ public class RoomManagementPanel extends JPanel {
             }
 
             try {
-                // Create Room object
                 Room newRoom = new Room(
                     roomNumberField.getText(),
-                    (String)roomTypeCombo.getSelectedItem(),
+                    (String) roomTypeCombo.getSelectedItem(),
                     Integer.parseInt(capacityField.getText()),
                     Double.parseDouble(priceField.getText()),
-                    (String)statusCombo.getSelectedItem()
+                    (String) statusCombo.getSelectedItem(),
+                null,
+                    null
                 );
 
-                // Add to repository
+                                // Add to repository
                 if (roomRepository.addRoom(newRoom)) {
-                    // Create Audit Log
-                    RoomAuditLog auditLog = new RoomAuditLog(
-                        newRoom.getRoomNumber(),
-                        "ADD",
-                        "N/A",
-                        newRoom.toString(),
-                        "Owner"
-                    );
-                    auditLogRepository.logRoomAction(auditLog);
-
+                   
                     loadRooms(); // Refresh table
                     JOptionPane.showMessageDialog(addRoomDialog, "Room Added Successfully!");
                     addRoomDialog.dispose();
@@ -215,36 +199,30 @@ public class RoomManagementPanel extends JPanel {
                return;
            }
 
-           try {
-               // Create updated Room object
-               Room updatedRoom = new Room(
-                       roomNumberField.getText(),
-                       (String) roomTypeCombo.getSelectedItem(),
-                       Integer.parseInt(capacityField.getText()),
-                       Double.parseDouble(priceField.getText()),
-                       (String) statusCombo.getSelectedItem());
+                try {
+                // Create updated Room object
+                Room updatedRoom = new Room(
+                    roomNumberField.getText(),
+                    (String) roomTypeCombo.getSelectedItem(),
+                    Integer.parseInt(capacityField.getText()),
+                    Double.parseDouble(priceField.getText()),
+                    (String) statusCombo.getSelectedItem(),
+                    null, // createdAt (can be set to null or use existingRoom.getCreatedAt())
+                    null  // updatedAt (can be set to null or use existingRoom.getUpdatedAt())
+                );
 
-                 // Update in repository
+                // Update in repository
                 if (roomRepository.updateRoom(updatedRoom)) {
-                    // Create Audit Log
-                    RoomAuditLog auditLog = new RoomAuditLog(
-                        updatedRoom.getRoomNumber(),
-                        "EDIT",
-                        existingRoom.toString(),
-                        updatedRoom.toString(),
-                        "Owner"
-                    );
-                    auditLogRepository.logRoomAction(auditLog);
-
+                  
                     loadRooms(); // Refresh table
                     JOptionPane.showMessageDialog(editRoomDialog, "Room Updated Successfully!");
                     editRoomDialog.dispose();
                 } else {
                     JOptionPane.showMessageDialog(editRoomDialog, "Failed to update room");
                 }
-           } catch (NumberFormatException ex) {
-               JOptionPane.showMessageDialog(editRoomDialog, "Invalid numeric input");
-           }
+            } catch (NumberFormatException ex) {
+                JOptionPane.showMessageDialog(editRoomDialog, "Invalid numeric input");
+            }
        });
        panel.add(saveButton);
 
@@ -290,35 +268,27 @@ public class RoomManagementPanel extends JPanel {
                     boolean deletionSuccessful = roomRepository.deleteRoom(roomNumber);
                 
                     if (deletionSuccessful) {
-                        // Create comprehensive Audit Log
-                        RoomAuditLog auditLog = new RoomAuditLog(
-                            roomNumber,
-                            "DELETE",
-                            existingRoom.toString(),
-                            "Room Permanently Removed",
-                            "Owner"
-                        );
-                        auditLogRepository.logRoomAction(auditLog);
+                                                 int generatedRoomID = existingRoom.getRoomID();
 
-                        // Refresh the room list
-                        loadRooms();
+    // Refresh the room list
+    loadRooms();
 
-                        // Show success message
-                        JOptionPane.showMessageDialog(
-                            this, 
-                            "Room " + roomNumber + " has been successfully deleted.", 
-                            "Deletion Successful", 
-                            JOptionPane.INFORMATION_MESSAGE
-                        );
-                    } else {
-                        // Deletion failed
-                        JOptionPane.showMessageDialog(
-                            this, 
-                            "Failed to delete room. Please try again or contact support.", 
-                            "Deletion Error", 
-                            JOptionPane.ERROR_MESSAGE
-                        );
-                    }
+    // Show success message
+    JOptionPane.showMessageDialog(
+        this, 
+        "Room " + existingRoom.getRoomNumber() + " has been successfully deleted.", 
+        "Deletion Successful", 
+        JOptionPane.INFORMATION_MESSAGE
+    );
+} else {
+    // Deletion failed
+    JOptionPane.showMessageDialog(
+        this, 
+        "Failed to delete room. Please try again or contact support.", 
+        "Deletion Error", 
+        JOptionPane.ERROR_MESSAGE
+    );
+}
                 } catch (Exception deleteException) {
                     // Log any unexpected errors
                     System.err.println("Unexpected error during room deletion: " + deleteException.getMessage());
@@ -393,67 +363,5 @@ public class RoomManagementPanel extends JPanel {
         return true;
     }
 
-    private void showAuditLogs(ActionEvent e) {
-    // Create a dialog to display audit logs
-    JDialog auditLogDialog = new JDialog((Frame) SwingUtilities.getWindowAncestor(this), "Room Management Audit Logs", true);
-    auditLogDialog.setSize(600, 400);
-    auditLogDialog.setLocationRelativeTo(this);
-
-    // Create table model for audit logs
-    String[] columnNames = {"Room Number", "Action", "Timestamp", "Performed By"};
-    DefaultTableModel auditTableModel = new DefaultTableModel(columnNames, 0);
-
-    // Fetch audit logs
-    List<RoomAuditLog> auditLogs = auditLogRepository.getAllAuditLogs();
     
-    // Populate table model
-    for (RoomAuditLog log : auditLogs) {
-        Object[] rowData = {
-            log.getRoomNumber(),
-            log.getActionType(),
-            log.getActionTimestamp().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")),
-            log.getPerformedBy()
-        };
-        auditTableModel.addRow(rowData);
-    }
-
-    // Create table
-    JTable auditLogTable = new JTable(auditTableModel);
-    auditLogTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION); // Allow single selection
-    JScrollPane scrollPane = new JScrollPane(auditLogTable);
-
-    // Add details button
-    JButton detailsButton = new JButton("View Log Details");
-    detailsButton.addActionListener(detailEvent -> {
-        int selectedRow = auditLogTable.getSelectedRow();
-        if (selectedRow != -1) {
-            RoomAuditLog selectedLog = auditLogs.get(selectedRow);
-            String logDetails = String.format(
-                "Room Number: %s\nAction: %s\nTimestamp: %s\nPerformed By: %s\nOld Details: %s\nNew Details: %s",
-                selectedLog.getRoomNumber(),
-                selectedLog.getActionType(),
-                selectedLog.getActionTimestamp().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")),
-                selectedLog.getPerformedBy(),
-                selectedLog.getOldDetails() != null ? selectedLog.getOldDetails() : "N/A",
-                selectedLog.getNewDetails() != null ? selectedLog.getNewDetails() : "N/A"
-            );
-            JOptionPane.showMessageDialog(
-                auditLogDialog, 
-                logDetails, 
-                "Room Audit Log Details", 
-                JOptionPane.INFORMATION_MESSAGE
-            );
-        } else {
-            JOptionPane.showMessageDialog(auditLogDialog, "Please select a log entry to view details.", "No Selection", JOptionPane.WARNING_MESSAGE);
-        }
-    });
-
-    // Layout
-    JPanel mainPanel = new JPanel(new BorderLayout());
-    mainPanel.add(scrollPane, BorderLayout.CENTER);
-    mainPanel.add(detailsButton, BorderLayout.SOUTH);
-
-    auditLogDialog.add(mainPanel);
-    auditLogDialog.setVisible(true);
-}
 }
