@@ -278,7 +278,7 @@ public class ManageBookingsPanel extends JPanel {
         }
 
         // Fetch the selected booking details
-        String bookingId = (String) tableModel.getValueAt(selectedRow, 0);
+        int bookingId = (Integer) tableModel.getValueAt(selectedRow, 0);
         Booking booking = bookingRepository.getBookingById(bookingId);
 
         JDialog editBookingDialog = new JDialog((Frame) SwingUtilities.getWindowAncestor(this), "Edit Booking", true);

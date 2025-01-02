@@ -1,6 +1,6 @@
 package beachresort.repositories;
 
-import beachresort.models.RoomAuditLog;
+import beachresort.models.AuditLog;
 import beachresort.database.DatabaseConnection;
 
 import java.sql.Connection;
@@ -11,24 +11,25 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-public class RoomAuditLogRepository {
+public class AuditLogRepository {
     private Connection connection;
 
-    public RoomAuditLogRepository() {
+    public AuditLogRepository() {
         try {
             this.connection = DatabaseConnection.getConnection();
-            createRoomAuditLogTableIfNotExists();
+            createAuditLogTableIfNotExists();
         } catch (SQLException e) {
             e.printStackTrace();
         }
     }
 
-    // Create Room Audit Log Table
-    private void createRoomAuditLogTableIfNotExists() {
+    // Create Audit Log Table
+    private void createAuditLogTableIfNotExists() {
         String createTableQuery = 
-            "CREATE TABLE IF NOT EXISTS room_audit_logs (" +
+            "CREATE TABLE IF NOT EXISTS audit_logs (" +
             "    id INT AUTO_INCREMENT PRIMARY KEY," +
-            "    room_number VARCHAR(20) NOT NULL," +
+            "    transaction_id INT NOT NULL," + // Set transaction ID
+            "    transaction_type ENUM('ROOM', 'BOOKING', 'PAYMENT', 'STAFF', 'CHECKIN') NOT NULL," + // Set transaction type
             "    action_type ENUM('ADD', 'EDIT', 'DELETE') NOT NULL," +
             "    old_details TEXT," +
             "    new_details TEXT," +
@@ -38,47 +39,49 @@ public class RoomAuditLogRepository {
 
         try (PreparedStatement pstmt = connection.prepareStatement(createTableQuery)) {
             pstmt.execute();
-            System.out.println("Room Audit Log table created or already exists.");
+            System.out.println("Audit Log table created or already exists.");
         } catch (SQLException e) {
-            System.err.println("Error creating room audit log table: " + e.getMessage());
+            System.err.println("Error creating audit log table: " + e.getMessage());
         }
     }
 
-    // Log Room Action
-    public boolean logRoomAction(RoomAuditLog auditLog) {
-        String query = "INSERT INTO room_audit_logs " +
-                       "(room_number, action_type, old_details, new_details, performed_by) " +
-                       "VALUES (?, ?, ?, ?, ?)";
+    // Log Action
+    public boolean logAction(AuditLog auditLog) {
+        String query = "INSERT INTO audit_logs " +
+                       "(transaction_id, transaction_type, action_type, old_details, new_details, performed_by) " +
+                       "VALUES (?, ?, ?, ?, ?, ?)";
         
         try (PreparedStatement pstmt = connection.prepareStatement(query)) {
-            pstmt.setString(1, auditLog.getRoomNumber());
-            pstmt.setString(2, auditLog.getActionType());
-            pstmt.setString(3, auditLog.getOldDetails());
-            pstmt.setString(4, auditLog.getNewDetails());
-            pstmt.setString(5, auditLog.getPerformedBy());
+            pstmt.setInt(1, auditLog.getTransactionID()); // Set transaction ID
+            pstmt.setString(2, auditLog.getTransactionType()); // Set transaction type
+            pstmt.setString(3, auditLog.getActionType()); // Set action type
+            pstmt.setString(4, auditLog.getOldDetails()); // Set old details
+            pstmt.setString(5, auditLog.getNewDetails()); // Set new details
+            pstmt.setString(6, auditLog.getPerformedBy()); // Set performed by
 
             int rowsAffected = pstmt.executeUpdate();
             return rowsAffected > 0;
         } catch (SQLException e) {
-            System.err.println("Error logging room action: " + e.getMessage());
+            System.err.println("Error logging action: " + e.getMessage());
             return false;
         }
     }
 
-    // Get Audit Logs for a Specific Room
-    public List<RoomAuditLog> getAuditLogsForRoom(String roomNumber) {
-        List<RoomAuditLog> auditLogs = new ArrayList<>();
-        String query = "SELECT * FROM room_audit_logs " +
-                       "WHERE room_number = ? " +
+    // Get Audit Logs by Transaction ID
+    public List<AuditLog> getAuditLogsByTransactionId(int transactionId) {
+        List<AuditLog> auditLogs = new ArrayList<>();
+        String query = "SELECT * FROM audit_logs " +
+                       "WHERE transaction_id = ? " +
                        "ORDER BY action_timestamp DESC";
         
         try (PreparedStatement pstmt = connection.prepareStatement(query)) {
-            pstmt.setString(1, roomNumber);
+            pstmt.setInt(1, transactionId);
             
             try (ResultSet rs = pstmt.executeQuery()) {
                 while (rs.next()) {
-                    RoomAuditLog log = new RoomAuditLog(
-                        rs.getString("room_number"),
+                    AuditLog log = new AuditLog(
+                       rs.getInt("transaction_id"),
+                        rs.getString("transaction_type"),
                         rs.getString("action_type"),
                         rs.getString("old_details"),
                         rs.getString("new_details"),
@@ -88,27 +91,28 @@ public class RoomAuditLogRepository {
                 }
             }
         } catch (SQLException e) {
-            System.err.println("Error retrieving audit logs for room: " + e.getMessage());
+            System.err.println("Error retrieving audit logs by transaction ID: " + e.getMessage());
         }
         
         return auditLogs;
     }
 
     // Get All Audit Logs
-    public List<RoomAuditLog> getAllAuditLogs() {
-        List<RoomAuditLog> auditLogs = new ArrayList<>();
-        String query = "SELECT * FROM room_audit_logs ORDER BY action_timestamp DESC";
+    public List<AuditLog> getAllAuditLogs() {
+        List<AuditLog> auditLogs = new ArrayList<>();
+        String query = "SELECT * FROM audit_logs ORDER BY action_timestamp DESC";
         
         try (PreparedStatement pstmt = connection.prepareStatement(query);
              ResultSet rs = pstmt.executeQuery()) {
             
             while (rs.next()) {
-                RoomAuditLog log = new RoomAuditLog(
-                    rs.getString("room_number"),
-                    rs.getString("action_type"),
-                    rs.getString("old_details"),
-                    rs.getString("new_details"),
-                    rs.getString("performed_by")
+                AuditLog log = new AuditLog(
+                   rs.getInt("transaction_id"),
+                        rs.getString("transaction_type"),
+                        rs.getString("action_type"),
+                        rs.getString("old_details"),
+                        rs.getString("new_details"),
+                        rs.getString("performed_by")
                 );
                 auditLogs.add(log);
             }
@@ -120,9 +124,9 @@ public class RoomAuditLogRepository {
     }
 
     // Get Audit Logs Within a Date Range
-    public List<RoomAuditLog> getAuditLogsByDateRange(LocalDateTime startDate, LocalDateTime endDate) {
-        List<RoomAuditLog> auditLogs = new ArrayList<>();
-        String query = "SELECT * FROM room_audit_logs " +
+    public List<AuditLog> getAuditLogsByDateRange(LocalDateTime startDate, LocalDateTime endDate) {
+        List<AuditLog> auditLogs = new ArrayList<>();
+        String query = "SELECT * FROM audit_logs " +
                        "WHERE action_timestamp BETWEEN ? AND ? " +
                        "ORDER BY action_timestamp DESC";
         
@@ -132,8 +136,9 @@ public class RoomAuditLogRepository {
             
             try (ResultSet rs = pstmt.executeQuery()) {
                 while (rs.next()) {
-                    RoomAuditLog log = new RoomAuditLog(
-                        rs.getString("room_number"),
+                    AuditLog log = new AuditLog(
+                        rs.getInt("transaction_id"),
+                        rs.getString("transaction_type"),
                         rs.getString("action_type"),
                         rs.getString("old_details"),
                         rs.getString("new_details"),
@@ -150,9 +155,9 @@ public class RoomAuditLogRepository {
     }
 
     // Get Audit Logs by Action Type
-    public List<RoomAuditLog> getAuditLogsByActionType(String actionType) {
-        List<RoomAuditLog> auditLogs = new ArrayList<>();
-        String query = "SELECT * FROM room_audit_logs " +
+    public List<AuditLog> getAuditLogsByActionType(String actionType) {
+        List<AuditLog> auditLogs = new ArrayList<>();
+        String query = "SELECT * FROM audit_logs " +
                        "WHERE action_type = ? " +
                        "ORDER BY action_timestamp DESC";
         
@@ -161,8 +166,9 @@ public class RoomAuditLogRepository {
             
             try (ResultSet rs = pstmt.executeQuery()) {
                 while (rs.next()) {
-                    RoomAuditLog log = new RoomAuditLog(
-                        rs.getString("room_number"),
+                    AuditLog log = new AuditLog(
+                        rs.getInt("transaction_id"),
+                        rs.getString("transaction_type"),
                         rs.getString("action_type"),
                         rs.getString("old_details"),
                         rs.getString("new_details"),
@@ -180,7 +186,7 @@ public class RoomAuditLogRepository {
 
     // Count Total Audit Logs
     public int countTotalAuditLogs() {
-        String query = "SELECT COUNT(*) FROM room_audit_logs";
+        String query = "SELECT COUNT(*) FROM audit_logs";
         
         try (PreparedStatement pstmt = connection.prepareStatement(query);
              ResultSet rs = pstmt.executeQuery()) {

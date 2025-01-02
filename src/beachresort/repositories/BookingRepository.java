@@ -44,10 +44,10 @@ public class BookingRepository {
         }
     }
 
-    public Booking getBookingById(String bookingId) {
+    public Booking getBookingById(int bookingId) {
         String query = "SELECT * FROM bookings WHERE booking_id = ?";
         try (PreparedStatement pstmt = connection.prepareStatement(query)) {
-            pstmt.setString(1, bookingId);
+            pstmt.setInt(1, bookingId);
             ResultSet rs = pstmt.executeQuery();
             if (rs.next()) {
                 return new Booking(
