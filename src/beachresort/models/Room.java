@@ -3,14 +3,14 @@ package beachresort.models;
 import java.sql.Timestamp;
 
 public class Room {
-    private int roomID; // New field for room ID
+    private int roomID; 
     private String roomNumber;
     private String roomType;
     private int capacity;
     private double pricePerNight;
     private String status;
-    private Timestamp createdAt; // New field for created timestamp
-    private Timestamp updatedAt; // New field for updated timestamp
+    private Timestamp createdAt; 
+    private Timestamp updatedAt; 
 
     // Constructor
     public Room(String roomNumber, String roomType, int capacity, double pricePerNight, String status, Timestamp createdAt, Timestamp updatedAt) {

@@ -4,11 +4,11 @@ import java.sql.Timestamp;
 
 public class Absence {
     private int absenceId;
-    private String userId; // Staff user ID
+    private String userId; 
     private String leaveType;
     private Timestamp startDate;
     private Timestamp endDate;
-    private String status; // e.g., "Pending", "Approved", "Rejected"
+    private String status; 
     private String reason;
     private Timestamp createdAt;
     private Timestamp updatedAt;
@@ -105,11 +105,6 @@ public class Absence {
 
 
     
-    // ... (generate for all fields)
-
-
-
-    // Validate method
     public boolean validate() {
         if (userId == null || userId.trim().isEmpty()) {
             return false;

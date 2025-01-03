@@ -4,23 +4,23 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 public class AuditLog {
-    private int id; // Unique identifier for the audit log entry
-    private String transactionType; // Type of transaction (e.g., Booking, Room)
-    private int transactionID; // ID of the transaction associated with this log
-    private String actionType; // Action performed (e.g., ADD, EDIT, DELETE)
-    private String oldDetails; // Previous state/details before the action
-    private String newDetails; // New state/details after the action
-    private LocalDateTime actionTimestamp; // Timestamp of when the action was performed
-    private String performedBy; // User who performed the action
+    private int id; 
+    private String transactionType; 
+    private int transactionID;
+    private String actionType; 
+    private String oldDetails; 
+    private String newDetails; 
+    private LocalDateTime actionTimestamp; 
+    private String performedBy; 
 
     // Constructor
     public AuditLog(int transactionID, String transactionType ,String actionType, String oldDetails, String newDetails, String performedBy) {
-        this.transactionID = transactionID; // Set the transaction ID
+        this.transactionID = transactionID; 
         this.transactionType=transactionType;
         this.actionType = actionType;
         this.oldDetails = oldDetails;
         this.newDetails = newDetails;
-        this.actionTimestamp = LocalDateTime.now(); // Set the current timestamp
+        this.actionTimestamp = LocalDateTime.now(); 
         this.performedBy=performedBy;
     }
 
@@ -70,11 +70,11 @@ public class AuditLog {
     }
 
     public int getTransactionID() {
-        return transactionID; // Getter for transaction ID
+        return transactionID; 
     }
 
     public void setTransactionID(int transactionID) {
-        this.transactionID = transactionID; // Setter for transaction ID
+        this.transactionID = transactionID; 
     }
 
     public String getActionType() {

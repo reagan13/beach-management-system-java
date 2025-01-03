@@ -149,14 +149,14 @@ public class RoomRepository {
         String query = "UPDATE rooms SET status = ? WHERE room_number = ?";
         
         try (PreparedStatement pstmt = connection.prepareStatement(query)) {
-            pstmt.setString(1, newStatus); // Set the new status
-            pstmt.setString(2, roomNumber); // Set the room number for the WHERE clause
+            pstmt.setString(1, newStatus); 
+            pstmt.setString(2, roomNumber); 
 
-            int rowsAffected = pstmt.executeUpdate(); // Execute the update
-            return rowsAffected > 0; // Return true if at least one row was updated
+            int rowsAffected = pstmt.executeUpdate(); 
+            return rowsAffected > 0; 
         } catch (SQLException e) {
             System.err.println("Error updating room status: " + e.getMessage());
-            return false; // Return false if there was an error
+            return false; 
         }
     }
 
@@ -173,7 +173,7 @@ public class RoomRepository {
                 newStatus = "Available";
                 break;
             default:
-                newStatus = "Available"; // Default status
+                newStatus = "Available"; 
                 break;
         }
         // Log the new status for debugging

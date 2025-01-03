@@ -78,7 +78,7 @@ public class BookingRepository {
         } catch (SQLException e) {
             System.err.println("Error retrieving booking: " + e.getMessage());
         }
-        return null; // Return null if no booking is found
+        return null; 
     }
 
     

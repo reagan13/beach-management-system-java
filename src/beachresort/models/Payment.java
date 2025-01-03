@@ -6,10 +6,10 @@ import java.math.BigDecimal;
 public class Payment {
     private int paymentId;
     private String userId;
-    private String paymentType; // Booking, Service, Salary, etc.
+    private String paymentType; 
     private BigDecimal amount;
-    private String paymentMethod; // Cash, Credit Card, Bank Transfer
-    private String status; // Pending, Completed, Failed
+    private String paymentMethod; 
+    private String status; 
     private String description;
     private Timestamp paymentDate;
     private Timestamp createdAt;
@@ -26,8 +26,6 @@ public class Payment {
         this.description = description;
         this.paymentDate = paymentDate;
     }
-
-    // Getters and Setters (generate for all fields)
 
     public int getPaymentId() {
         return paymentId;

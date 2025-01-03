@@ -3,14 +3,14 @@ package beachresort.models;
 import java.time.LocalDate;
 
 public class CheckInOut {
-    private int id; // Unique identifier for the check-in/check-out record
-    private int userId; // User ID associated with the check-in/check-out
-    private String customerName; // Name of the customer
-    private LocalDate checkInDate; // Check-in date
-    private LocalDate checkOutDate; // Check-out date
+    private int id; 
+    private int userId; 
+    private String customerName; 
+    private LocalDate checkInDate; 
+    private LocalDate checkOutDate; 
     private String roomNumber;
-    private String checkInType; // Type of check-in (e.g., "walk-in" or "booking")
-    private String status; // Status of the check-in/check-out record (e.g., "Checked In", "Checked Out")
+    private String checkInType; 
+    private String status; 
 
     // Constructor with all fields including id and userId
     public CheckInOut(int id, int userId, String customerName, LocalDate checkInDate, LocalDate checkOutDate, 
@@ -102,7 +102,7 @@ public class CheckInOut {
         this.status = status;
     }
 
-    // Optional: toString method for easy printing/debugging
+
     @Override
     public String toString() {
         return "CheckInOut{" +
