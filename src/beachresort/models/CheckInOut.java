@@ -4,6 +4,7 @@ import java.time.LocalDate;
 
 public class CheckInOut {
     private int id; // Unique identifier for the check-in/check-out record
+    private int userId; // User ID associated with the check-in/check-out
     private String customerName; // Name of the customer
     private LocalDate checkInDate; // Check-in date
     private LocalDate checkOutDate; // Check-out date
@@ -11,11 +12,11 @@ public class CheckInOut {
     private String checkInType; // Type of check-in (e.g., "walk-in" or "booking")
     private String status; // Status of the check-in/check-out record (e.g., "Checked In", "Checked Out")
 
-    // Constructor
-    public CheckInOut(int id, String customerName, LocalDate checkInDate, LocalDate checkOutDate, String checkInType,
-            String roomNumber,
-            String status) {
+    // Constructor with all fields including id and userId
+    public CheckInOut(int id, int userId, String customerName, LocalDate checkInDate, LocalDate checkOutDate, 
+                      String roomNumber, String checkInType, String status) {
         this.id = id;
+        this.userId = userId;
         this.customerName = customerName;
         this.checkInDate = checkInDate;
         this.checkOutDate = checkOutDate;
@@ -23,10 +24,11 @@ public class CheckInOut {
         this.checkInType = checkInType;
         this.status = status;
     }
-      public CheckInOut(String customerName, LocalDate checkInDate, LocalDate checkOutDate, String checkInType,
-            String roomNumber,
-            String status) {
-    
+
+    // Constructor without id
+    public CheckInOut(int userId, String customerName, LocalDate checkInDate, LocalDate checkOutDate, 
+                      String roomNumber, String checkInType, String status) {
+        this.userId = userId;
         this.customerName = customerName;
         this.checkInDate = checkInDate;
         this.checkOutDate = checkOutDate;
@@ -34,7 +36,6 @@ public class CheckInOut {
         this.checkInType = checkInType;
         this.status = status;
     }
-  
 
     // Getters and Setters
     public int getId() {
@@ -43,6 +44,14 @@ public class CheckInOut {
 
     public void setId(int id) {
         this.id = id;
+    }
+
+    public int getUserId() {
+        return userId;
+    }
+
+    public void setUserId(int userId) {
+        this.userId = userId;
     }
 
     public String getCustomerName() {
@@ -91,5 +100,20 @@ public class CheckInOut {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    // Optional: toString method for easy printing/debugging
+    @Override
+    public String toString() {
+        return "CheckInOut{" +
+                "id=" + id +
+                ", userId=" + userId +
+                ", customerName='" + customerName + '\'' +
+                ", checkInDate=" + checkInDate +
+                ", checkOutDate=" + checkOutDate +
+                ", roomNumber='" + roomNumber + '\'' +
+                ", checkInType='" + checkInType + '\'' +
+                ", status='" + status + '\'' +
+                '}';
     }
 }

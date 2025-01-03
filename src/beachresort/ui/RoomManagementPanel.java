@@ -82,7 +82,7 @@ public class RoomManagementPanel extends JPanel {
                 room.getRoomNumber(),
                 room.getRoomType(),
                 room.getCapacity(),
-                String.format("$%.2f", room.getPricePerNight()),
+                String.format("₱%.2f", room.getPricePerNight()),
                 room.getStatus()
             };
             tableModel.addRow(rowData);

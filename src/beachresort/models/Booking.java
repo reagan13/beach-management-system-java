@@ -3,31 +3,35 @@ package beachresort.models;
 import java.time.LocalDate;
 
 public class Booking {
-    private int bookingID; // Unique identifier for the booking
-    private String roomNumber; // Room number associated with the booking
-    private String customerName; // ID of the customer making the booking
-    private LocalDate checkInDate; // Check-in date
-    private LocalDate checkOutDate; // Check-out date
-    private int numberOfGuests; // Number of guests
-    private double totalPrice; // Total price for the booking
-    private String status; // Status of the booking (e.g., Confirmed, Cancelled)
+    private int bookingID; 
+    private int userId; 
+    private String roomNumber; 
+    private String customerName; 
+    private LocalDate checkInDate; 
+    private LocalDate checkOutDate; 
+    private int numberOfGuests; 
+    private double totalPrice; 
+    private String status; 
 
-      // Constructor
-      public Booking( String roomNumber, String customerName, LocalDate checkInDate, LocalDate checkOutDate,
-              int numberOfGuests, double totalPrice, String status) {
-       
-          this.roomNumber = roomNumber;
-          this.customerName = customerName;
-          this.checkInDate = checkInDate;
-          this.checkOutDate = checkOutDate;
-          this.numberOfGuests = numberOfGuests;
-          this.totalPrice = totalPrice;
-          this.status = status;
-      }
+    // Constructor without bookingID and userId
+    public Booking(int userId, String roomNumber,String customerName, LocalDate checkInDate, LocalDate checkOutDate,
+            int numberOfGuests, double totalPrice, String status) {
+           this.userId = userId;
+                this.roomNumber = roomNumber;
     
-    // Constructor
-    public Booking(int bookingID, String roomNumber, String customerName, LocalDate checkInDate, LocalDate checkOutDate, int numberOfGuests, double totalPrice, String status) {
+        this.customerName = customerName;
+        this.checkInDate = checkInDate;
+        this.checkOutDate = checkOutDate;
+        this.numberOfGuests = numberOfGuests;
+        this.totalPrice = totalPrice;
+        this.status = status;
+    }
+
+    // Constructor with bookingID and userId
+    public Booking(int bookingID, int userId, String roomNumber, String customerName, LocalDate checkInDate, 
+                   LocalDate checkOutDate, int numberOfGuests, double totalPrice, String status) {
         this.bookingID = bookingID;
+        this.userId = userId;
         this.roomNumber = roomNumber;
         this.customerName = customerName;
         this.checkInDate = checkInDate;
@@ -38,13 +42,20 @@ public class Booking {
     }
 
     // Getters and Setters
-
     public int getBookingID() {
         return bookingID;
     }
 
     public void setBookingId(int bookingId) {
         this.bookingID = bookingId;
+    }
+
+    public int getUserId() {
+        return userId;
+    }
+
+    public void setUserId(int userId) {
+        this.userId = userId;
     }
 
     public String getRoomNumber() {
@@ -70,8 +81,6 @@ public class Booking {
     public void setCheckInDate(LocalDate checkInDate) {
         this.checkInDate = checkInDate;
     }
-
-
 
     public LocalDate getCheckOutDate() {
         return checkOutDate;
@@ -105,20 +114,13 @@ public class Booking {
         this.status = status;
     }
 
-
-    // (Add getters and setters for all attributes)
-
-
-    // Validation method
-    public boolean validate() {
-        // Implement validation logic (e.g., check dates, number of guests)
-        return true; // Placeholder
-    }
+  
 
     @Override
     public String toString() {
         return "Booking{" +
-                "bookingID='" + bookingID + '\'' +
+                "bookingID=" + bookingID +
+                ", userId=" + userId +
                 ", roomNumber='" + roomNumber + '\'' +
                 ", customerName='" + customerName + '\'' +
                 ", checkInDate=" + checkInDate +

@@ -17,11 +17,11 @@ import java.util.List;
 public class ManageBookingsPanel extends JPanel {
     private JTable bookingsTable;
     private DefaultTableModel tableModel;
-    private BookingRepository bookingRepository; // Repository for managing bookings
-    private RoomRepository roomRepository; // Repository for managing rooms
+    private BookingRepository bookingRepository;
+    private RoomRepository roomRepository;
 
     public ManageBookingsPanel() {
-        bookingRepository = new BookingRepository(); // Initialize the booking repository
+        bookingRepository = new BookingRepository();
         roomRepository = new RoomRepository();
         setLayout(new BorderLayout());
 
@@ -70,8 +70,8 @@ public class ManageBookingsPanel extends JPanel {
         for (Booking booking : bookings) {
             Object[] rowData = {
                 booking.getBookingID(),
-                booking.getCustomerName(), // Assuming customer ID is used as the name for simplicity
-                booking.getRoomNumber(), // Assuming room number is used as the room type for simplicity
+                booking.getCustomerName(),
+                booking.getRoomNumber(),
                 booking.getCheckInDate(),
                 booking.getCheckOutDate(),
                 booking.getStatus()
@@ -80,77 +80,85 @@ public class ManageBookingsPanel extends JPanel {
         }
     }
 
-    
     private void addBooking(ActionEvent e) {
         JDialog addBookingDialog = new JDialog((Frame) SwingUtilities.getWindowAncestor(this), "Add New Booking", true);
-        addBookingDialog.setSize(400, 500);
+        addBookingDialog.setSize(400, 600);
         addBookingDialog.setLocationRelativeTo(this);
 
         // Use GridBagLayout for more control over component placement
         JPanel panel = new JPanel(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.insets = new Insets(10, 10, 10, 10); // Add some padding
+        gbc.insets = new Insets(10, 10, 10, 10);
 
-        // Row 1: Customer Name
-        gbc.gridx = 0; // First column
-        gbc.gridy = 0; // First row
+        // Row 1: User ID Input
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        panel.add(new JLabel("User ID:"), gbc);
+
+        gbc.gridx = 1;
+        JTextField userIdField = new JTextField();
+        panel.add(userIdField, gbc);
+
+        // Row 2: Customer Name
+        gbc.gridx = 0;
+        gbc.gridy = 1;
         panel.add(new JLabel("Customer Name:"), gbc);
 
-        gbc.gridx = 1; // Second column
+        gbc.gridx = 1;
         JTextField customerNameField = new JTextField();
         panel.add(customerNameField, gbc);
 
-        // Row 2: Room Type
-        gbc.gridx = 0; // First column
-        gbc.gridy = 1; // Second row
+        // Row 3: Room Type
+        gbc.gridx = 0;
+        gbc.gridy = 2;
         panel.add(new JLabel("Room Type:"), gbc);
 
-        gbc.gridx = 1; // Second column
+        gbc.gridx = 1;
         String[] roomTypes = { "Standard", "Deluxe", "Suite" };
         JComboBox<String> roomTypeCombo = new JComboBox<>(roomTypes);
         panel.add(roomTypeCombo, gbc);
 
-        // Row 3: Available Rooms
-        gbc.gridx = 0; // First column
-        gbc.gridy = 2; // Third row
+        // Row 4: Available Rooms
+        gbc.gridx = 0;
+        gbc.gridy = 3;
         panel.add(new JLabel("Available Rooms:"), gbc);
 
-        gbc.gridx = 1; // Second column
+        gbc.gridx = 1;
         JComboBox<String> availableRoomsCombo = new JComboBox<>();
         panel.add(availableRoomsCombo, gbc);
 
-        // Row 4: Room Capacity
-        gbc.gridx = 0; // First column
-        gbc.gridy = 3; // Fourth row
+        // Row 5: Room Capacity
+        gbc.gridx = 0;
+        gbc.gridy = 4;
         panel.add(new JLabel("Room Capacity:"), gbc);
 
-        gbc.gridx = 1; // Second column
+        gbc.gridx = 1;
         JTextField capacityField = new JTextField();
-        capacityField.setEditable(false); // Make it read-only
+        capacityField.setEditable(false);
         panel.add(capacityField, gbc);
 
-        // Row 5: Room Price
-        gbc.gridx = 0; // First column
-        gbc.gridy = 4; // Fifth row
+        // Row 6: Room Price
+        gbc.gridx = 0;
+        gbc.gridy = 5;
         panel.add(new JLabel("Room Price:"), gbc);
 
-        gbc.gridx = 1; // Second column
+        gbc.gridx = 1;
         JTextField priceField = new JTextField();
-        priceField.setEditable(false); // Make it read-only
+        priceField.setEditable(false);
         panel.add(priceField, gbc);
 
-        // Add an action listener to update available rooms when room type changes
+        // Room Type Listener
         roomTypeCombo.addActionListener(actionEvent -> {
             String selectedRoomType = (String) roomTypeCombo.getSelectedItem();
             updateAvailableRooms(selectedRoomType, availableRoomsCombo);
         });
 
-        // Add an action listener to update capacity and price when a room is selected
+        // Available Rooms Listener
         availableRoomsCombo.addActionListener(actionEvent -> {
             String selectedRoomNumber = (String) availableRoomsCombo.getSelectedItem();
             if (selectedRoomNumber != null) {
-                Room selectedRoom = roomRepository.getRoomByNumber(selectedRoomNumber); // Fetch room details
+                Room selectedRoom = roomRepository.getRoomByNumber(selectedRoomNumber);
                 if (selectedRoom != null) {
                     capacityField.setText(String.valueOf(selectedRoom.getCapacity()));
                     priceField.setText(String.valueOf(selectedRoom.getPricePerNight()));
@@ -158,99 +166,102 @@ public class ManageBookingsPanel extends JPanel {
             }
         });
 
-        // Row 6: Check-in Date
-        gbc.gridx = 0; // First column
-        gbc.gridy = 5; // Sixth row
+        // Row 7: Check-in Date
+        gbc.gridx = 0;
+        gbc.gridy = 6;
         panel.add(new JLabel("Check-in Date (yyyy-MM-dd):"), gbc);
 
-        gbc.gridx = 1; // Second column
+        gbc.gridx = 1;
         JTextField checkInField = new JTextField();
         panel.add(checkInField, gbc);
 
-        // Row 7: Check-out Date
-        gbc.gridx = 0; // First column
-        gbc.gridy = 6; // Seventh row
+        // Row 8: Check-out Date
+        gbc.gridx = 0;
+        gbc.gridy = 7;
         panel.add(new JLabel("Check-out Date (yyyy-MM-dd):"), gbc);
 
-        gbc.gridx = 1; // Second column
+        gbc.gridx = 1;
         JTextField checkOutField = new JTextField();
         panel.add(checkOutField, gbc);
 
-        // Row 8: Status
-        gbc.gridx = 0; // First column
-        gbc.gridy = 7; // Eighth row
+        // Row 9: Status
+        gbc.gridx = 0;
+        gbc.gridy = 8;
         panel.add(new JLabel("Status:"), gbc);
 
-        gbc.gridx = 1; // Second column
-        String[] statuses = {"Pending", "Cancelled" };
+        gbc.gridx = 1;
+        String[] statuses = {"Pending", "Cancelled"};
         JComboBox<String> statusCombo = new JComboBox<>(statuses);
         panel.add(statusCombo, gbc);
 
-        // Row 9: Save Button
-        gbc.gridx = 0; // First column
-        gbc.gridy = 8; // Ninth row
-        gbc.gridwidth = 2; // Span both columns
+        // Row 10: Save Button ```java
+        gbc.gridx = 0;
+        gbc.gridy = 9;
+        gbc.gridwidth = 2;
         JButton saveButton = new JButton("Save");
         saveButton.addActionListener(saveEvent -> {
-             // Check if there are available rooms
-            if (availableRoomsCombo.getItemCount() == 0) {
-                JOptionPane.showMessageDialog(addBookingDialog, "No available rooms to book.", "Error",
-                        JOptionPane.ERROR_MESSAGE);
-                return; // Prevent booking
+            // Validate User ID
+            int userId;
+            try {
+                userId = Integer.parseInt(userIdField.getText());
+            } catch (NumberFormatException ex) {
+                JOptionPane.showMessageDialog(addBookingDialog, "Invalid User ID. Please enter a valid number.", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
             }
-        
-            // Get selected room number and date range
+
+            // Check if user is a valid customer
+            if (!bookingRepository.isValidCustomerUser (userId)) {
+                JOptionPane.showMessageDialog(addBookingDialog, "Invalid User ID or User is not a Customer", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
             // Get selected room number and date range
             String selectedRoomNumber = (String) availableRoomsCombo.getSelectedItem();
             LocalDate newStartDate;
             LocalDate newEndDate;
-            
+
             try {
                 newStartDate = LocalDate.parse(checkInField.getText());
                 newEndDate = LocalDate.parse(checkOutField.getText());
             } catch (Exception ex) {
-                JOptionPane.showMessageDialog(addBookingDialog,
-                        "Invalid date format . Please use the format yyyy-MM-dd.", "Error", JOptionPane.ERROR_MESSAGE);
-                return; // Prevent booking
+                JOptionPane.showMessageDialog(addBookingDialog, "Invalid date format. Please use the format yyyy-MM-dd.", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
             }
+
             // Check for overlapping bookings
             if (checkForOverlappingBookings(selectedRoomNumber, newStartDate, newEndDate)) {
                 JOptionPane.showMessageDialog(addBookingDialog, "There is already a booking for this room on the selected dates.", "Error", JOptionPane.ERROR_MESSAGE);
-                return; // Prevent booking
+                return;
             }
-        
+
             try {
-                // Create a new booking object
-                
                 Booking newBooking = new Booking(
-                        
-                        (String) availableRoomsCombo.getSelectedItem(), // Selected room from available rooms
-                        customerNameField.getText(),
-                        LocalDate.parse(checkInField.getText()),
-                         LocalDate.parse(checkOutField.getText()),
-                        1, // Placeholder for number of guests
-                        Double.parseDouble(priceField.getText()), // Use the price from the price field
-                        statusCombo.getSelectedItem().toString() // Status
+                          userId,
+                    selectedRoomNumber,
+                    customerNameField.getText(),
+                    newStartDate,
+                    newEndDate,
+                    1, // Placeholder for number of guests
+                    Double.parseDouble(priceField.getText()),
+                    statusCombo.getSelectedItem().toString()
+              
                 );
 
-                // Save the booking using the repository
-                boolean isSuccess = bookingRepository.addBooking(newBooking, "User    "); // Pass the user who performed the action
+                boolean isSuccess = bookingRepository.addBooking(newBooking, "User ");
                 if (isSuccess) {
-                    roomRepository.updateRoomStatusBasedOnCurrent( (String) availableRoomsCombo.getSelectedItem(),  statusCombo.getSelectedItem().toString()); // Update room status to Booked
+                    roomRepository.updateRoomStatusBasedOnCurrent(selectedRoomNumber, statusCombo.getSelectedItem().toString());
                     JOptionPane.showMessageDialog(addBookingDialog, "Booking Added Successfully!");
                     addBookingDialog.dispose();
                 }
-                loadBookings(); // Refresh the table to show the new booking
-
-              
+                loadBookings();
             } catch (Exception ex) {
                 JOptionPane.showMessageDialog(addBookingDialog, "Error adding booking: " + ex.getMessage());
             }
         });
         panel.add(saveButton, gbc);
 
-        // Row 10: Cancel Button
-        gbc.gridy = 9; // Tenth row
+        // Row 11: Cancel Button
+        gbc.gridy = 10;
         JButton cancelButton = new JButton("Cancel");
         cancelButton.addActionListener(cancelEvent -> addBookingDialog.dispose());
         panel.add(cancelButton, gbc);
@@ -260,13 +271,8 @@ public class ManageBookingsPanel extends JPanel {
     }
 
     private void updateAvailableRooms(String roomType, JComboBox<String> availableRoomsCombo) {
-        // Clear existing items
         availableRoomsCombo.removeAllItems();
-
-        // Fetch available rooms from the RoomRepository based on the selected room type
-        List<String> availableRooms = roomRepository.getAvailableRoomsByType(roomType); // Implement this method in RoomRepository
-
-        // Add available rooms to the combo box
+        List<String> availableRooms = roomRepository.getAvailableRoomsByType(roomType);
         if (availableRooms.isEmpty()) {
             availableRoomsCombo.addItem("No available rooms");
         } else {
@@ -275,6 +281,7 @@ public class ManageBookingsPanel extends JPanel {
             }
         }
     }
+
     private void editBooking(ActionEvent e) {
         int selectedRow = bookingsTable.getSelectedRow();
         if (selectedRow == -1) {
@@ -282,16 +289,20 @@ public class ManageBookingsPanel extends JPanel {
             return;
         }
 
-        // Fetch the selected booking details
         int bookingId = (Integer) tableModel.getValueAt(selectedRow, 0);
         Booking booking = bookingRepository.getBookingById(bookingId);
 
         JDialog editBookingDialog = new JDialog((Frame) SwingUtilities.getWindowAncestor(this), "Edit Booking", true);
-        editBookingDialog.setSize(400, 300);
+        editBookingDialog.setSize(400, 350);
         editBookingDialog.setLocationRelativeTo(this);
 
-        JPanel panel = new JPanel(new GridLayout(6, 2, 10, 10));
+        JPanel panel = new JPanel(new GridLayout(7, 2, 10, 10));
         panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+
+        // Add User ID field
+        panel.add(new JLabel("User  ID:"));
+        JTextField userIdField = new JTextField(String.valueOf(booking.getUserId()));
+        panel.add(userIdField);
 
         panel.add(new JLabel("Customer Name:"));
         JTextField customerNameField = new JTextField(booking.getCustomerName());
@@ -299,7 +310,7 @@ public class ManageBookingsPanel extends JPanel {
 
         panel.add(new JLabel("Room Number:"));
         JTextField roomNumber = new JTextField(booking.getRoomNumber());
-        roomNumber.setEditable(false); // Make the text field non-editable
+        roomNumber.setEditable(false);
         panel.add(roomNumber);
 
         panel.add(new JLabel("Check-in Date (yyyy-MM-dd):"));
@@ -319,19 +330,34 @@ public class ManageBookingsPanel extends JPanel {
         JButton saveButton = new JButton("Save");
         saveButton.addActionListener(saveEvent -> {
             try {
-                  
+                // Validate User ID
+                int userId;
+                try {
+                    userId = Integer.parseInt(userIdField.getText());
+                } catch (NumberFormatException ex) {
+                    JOptionPane.showMessageDialog(editBookingDialog, "Invalid User ID. Please enter a valid number.", "Error", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+
+                // Check if user is a valid customer
+                if (!bookingRepository.isValidCustomerUser (userId)) {
+                    JOptionPane.showMessageDialog(editBookingDialog, "Invalid User ID or User is not a Customer", "Error", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+
                 // Update the booking object
                 booking.setBookingId(bookingId);
+                booking.setUserId(userId);
                 booking.setCustomerName(customerNameField.getText());
                 booking.setCheckInDate(LocalDate.parse(checkInField.getText()));
                 booking.setCheckOutDate(LocalDate.parse(checkOutField.getText()));
                 booking.setStatus(statusCombo.getSelectedItem().toString());
 
                 // Save the updated booking using the repository
-                bookingRepository.updateBooking(booking, "User "); // Pass the user who performed the action
-                loadBookings(); // Refresh the table to show the updated booking
+                bookingRepository.updateBooking(booking, "User ");
+                loadBookings();
 
-                roomRepository.updateRoomStatusBasedOnCurrent( booking.getRoomNumber(),  statusCombo.getSelectedItem().toString()); // Update room status to Booked
+                roomRepository.updateRoomStatusBasedOnCurrent(booking.getRoomNumber(), statusCombo.getSelectedItem().toString());
                 JOptionPane.showMessageDialog(editBookingDialog, "Booking Updated Successfully!");
                 editBookingDialog.dispose();
             } catch (Exception ex) {
@@ -349,7 +375,7 @@ public class ManageBookingsPanel extends JPanel {
     }
 
     private void deleteBooking(ActionEvent e) {
- int selectedRow = bookingsTable.getSelectedRow();
+        int selectedRow = bookingsTable.getSelectedRow();
         if (selectedRow == -1) {
             JOptionPane.showMessageDialog(this, "Please select a booking to delete");
             return;
@@ -357,23 +383,18 @@ public class ManageBookingsPanel extends JPanel {
         int bookingId = (Integer) tableModel.getValueAt(selectedRow, 0);
         Booking booking = bookingRepository.getBookingById(bookingId);
 
-        int confirm = JOptionPane.showConfirmDialog(this, 
-            "Are you sure you want to delete this booking?", 
-            "Confirm Deletion", 
-            JOptionPane.YES_NO_OPTION);
+        int confirm = JOptionPane.showConfirmDialog(this, "Are you sure you want to delete this booking?", "Confirm Deletion", JOptionPane.YES_NO_OPTION);
         
         if (confirm == JOptionPane.YES_OPTION) {
-            roomRepository.updateRoomStatusBasedOnCurrent(booking.getRoomNumber(), "Cancelled"); // Update room status to Booked
-
-            bookingRepository.deleteBooking(bookingId, "User  "); // Pass the user who performed the action
-
-            loadBookings(); // Refresh the table to reflect the deletion
+            roomRepository.updateRoomStatusBasedOnCurrent(booking.getRoomNumber(), "Cancelled");
+            bookingRepository.deleteBooking(bookingId, "User ");
+            loadBookings();
             JOptionPane.showMessageDialog(this, "Booking deleted successfully");
         }
     }
 
     private void refreshBookings(ActionEvent e) {
-        loadBookings(); // Reload bookings from the repository
+        loadBookings();
         JOptionPane.showMessageDialog(this, "Bookings refreshed successfully.");
     }
 
@@ -381,40 +402,37 @@ public class ManageBookingsPanel extends JPanel {
         List<Booking> existingBookings = getExistingBookingsForRoom(roomNumber);
 
         for (Booking booking : existingBookings) {
-            LocalDate existingStartDate = booking.getCheckInDate(); // Use getCheckInDate()
-            LocalDate existingEndDate = booking.getCheckOutDate(); // Use getCheckOutDate()
+            LocalDate existingStartDate = booking.getCheckInDate();
+            LocalDate existingEndDate = booking.getCheckOutDate();
 
-            // Check if the new booking overlaps with the existing booking
             if ((newStartDate.isEqual(existingStartDate) || newStartDate.isAfter(existingStartDate)) &&
                     (newStartDate.isBefore(existingEndDate) || newStartDate.isEqual(existingEndDate))) {
-                return true; // Overlap found
+                return true;
             }
 
             if ((newEndDate.isEqual(existingStartDate) || newEndDate.isBefore(existingEndDate)) &&
                     (newEndDate.isAfter(existingStartDate) || newEndDate.isEqual(existingStartDate))) {
-                return true; // Overlap found
+                return true;
             }
 
-            // Check if the new booking completely encompasses the existing booking
             if (newStartDate.isBefore(existingStartDate) && newEndDate.isAfter(existingEndDate)) {
-                return true; // Overlap found
+                return true;
             }
         }
 
-        return false; // No overlaps found
+        return false;
     }
 
     public List<Booking> getExistingBookingsForRoom(String roomNumber) {
         List<Booking> existingBookings = new ArrayList<>();
-        List<Booking> allBookings = bookingRepository.getAllBookings(); // Retrieve all bookings
+        List<Booking> allBookings = bookingRepository.getAllBookings();
 
-        // Filter bookings for the specified room number
         for (Booking booking : allBookings) {
-            if (booking.getRoomNumber().equals(roomNumber)) {
+            if (booking.getRoomNumber().equals(roomNumber )) {
                 existingBookings.add(booking);
             }
         }
 
-        return existingBookings; // Return the filtered list of bookings for the specified room
+        return existingBookings;
     }
 }
