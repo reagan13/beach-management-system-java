@@ -86,10 +86,7 @@ public class PaymentRepository {
     
      public List<Payment> getAllPayments() {
          List<Payment> payments = new ArrayList<>();
-         String query = "SELECT p.*, u.name AS user_name " +
-                 "FROM payments p " +
-                 "JOIN users u ON p.user_id = u.id " +
-                 "ORDER BY p.payment_date DESC";
+         String query = "SELECT * FROM payments ORDER BY payment_date DESC";
 
          try (PreparedStatement pstmt = connection.prepareStatement(query);
                  ResultSet rs = pstmt.executeQuery()) {
@@ -112,6 +109,8 @@ public class PaymentRepository {
 
          return payments;
      }
+
+
 
     
 

@@ -142,7 +142,7 @@ public class PaymentManagementPanel extends JPanel {
                     addPaymentDialog.dispose();
                 } else {
                     JOptionPane.showMessageDialog(addPaymentDialog, 
-                        "Failed to add payment", 
+                        "Failed to add payment. Please check user ID", 
                         "Error", 
                         JOptionPane.ERROR_MESSAGE);
                 }
