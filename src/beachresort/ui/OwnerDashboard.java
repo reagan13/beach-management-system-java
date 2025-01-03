@@ -29,6 +29,7 @@ public class OwnerDashboard extends JFrame {
         mainPanel.add(new ManageBookingsPanel(), "Manage Bookings");
         mainPanel.add(new RoomManagementPanel(), "Room Management");
         mainPanel.add(new StaffManagementPanel(), "Staff Management");
+        mainPanel.add(new PaymentManagementPanel(), "Payment Management"); // Add the new panel
       
         add(mainPanel, BorderLayout.CENTER);
 
@@ -68,6 +69,7 @@ public class OwnerDashboard extends JFrame {
         JButton manageBookingsButton = createStyledButton("Manage Bookings");
         JButton roomManagementButton = createStyledButton("Room Management");
         JButton staffManagementButton = createStyledButton("Staff Management");
+        JButton paymentManagementButton = createStyledButton("Payment Management"); // New button
         
 
         // Add Navigation Buttons
@@ -76,6 +78,7 @@ public class OwnerDashboard extends JFrame {
         navigationPanel.add(manageBookingsButton, gbc);
         navigationPanel.add(roomManagementButton, gbc);
         navigationPanel.add(staffManagementButton, gbc);
+        navigationPanel.add(paymentManagementButton, gbc); // Add the new button
     
 
         // Bottom Panel for Logout Button
@@ -97,6 +100,7 @@ public class OwnerDashboard extends JFrame {
         roomManagementButton.addActionListener(e -> showPanel("Room Management"));
         staffManagementButton.addActionListener(e -> showPanel("Staff Management"));
         checkInOutButton.addActionListener(e -> showPanel("Check In / Checkout")); // Action for new button
+        paymentManagementButton.addActionListener(e -> showPanel("Payment Management")); // Action for new button
         logoutButton.addActionListener(e -> handleLogout());
 
         // Combine Panels
