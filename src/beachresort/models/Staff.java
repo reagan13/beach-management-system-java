@@ -1,39 +1,39 @@
 package beachresort.models;
 
-import java.time.LocalDate;
+import java.sql.Timestamp;
 
 public class Staff {
-    private String staffId;
+    private int staffId;
     private String name;
-    private String position;
-    private String department;
-    private String contactNumber;
+    private String phoneNumber;
     private String email;
-    private double salary;
-    private LocalDate hireDate;
-    private String status; // Active, Inactive
+    private String position;
+    private String userId;
+    private String status;
+    private Timestamp createdAt;
+    private Timestamp updatedAt;
 
     // Constructor
-    public Staff(String staffId, String name, String position, String department, 
-                 String contactNumber, String email, double salary, 
-                 LocalDate hireDate, String status) {
-        this.staffId = staffId;
+    public Staff(String name, String phoneNumber, String email, 
+                 String position, String userId,
+                 String status, Timestamp createdAt, Timestamp updatedAt) {
         this.name = name;
-        this.position = position;
-        this.department = department;
-        this.contactNumber = contactNumber;
+        this.phoneNumber = phoneNumber;
         this.email = email;
-        this.salary = salary;
-        this.hireDate = hireDate;
+        this.position = position;
+        this.userId = userId;
+
         this.status = status;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
     }
 
     // Getters and Setters
-    public String getStaffId() {
+    public int getStaffId() {
         return staffId;
     }
 
-    public void setStaffId(String staffId) {
+    public void setStaffId(int staffId) {
         this.staffId = staffId;
     }
 
@@ -45,28 +45,12 @@ public class Staff {
         this.name = name;
     }
 
-    public String getPosition() {
-        return position;
+    public String getPhoneNumber() {
+        return phoneNumber;
     }
 
-    public void setPosition(String position) {
-        this.position = position;
-    }
-
-    public String getDepartment() {
-        return department;
-    }
-
-    public void setDepartment(String department) {
-        this.department = department;
-    }
-
-    public String getContactNumber() {
-        return contactNumber;
-    }
-
-    public void setContactNumber(String contactNumber) {
-        this.contactNumber = contactNumber;
+    public void setPhoneNumber(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
     }
 
     public String getEmail() {
@@ -77,20 +61,20 @@ public class Staff {
         this.email = email;
     }
 
-    public double getSalary() {
-        return salary;
+    public String getPosition() {
+        return position;
     }
 
-    public void setSalary(double salary) {
-        this.salary = salary;
+    public void setPosition(String position) {
+        this.position = position;
     }
 
-    public LocalDate getHireDate() {
-        return hireDate;
+    public String getUserId() {
+        return userId;
     }
 
-    public void setHireDate(LocalDate hireDate) {
-        this.hireDate = hireDate;
+    public void setUserId(String userId) {
+        this.userId = userId;
     }
 
     public String getStatus() {
@@ -101,26 +85,58 @@ public class Staff {
         this.status = status;
     }
 
-    // Validation Methods
-    public boolean isValidEmail() {
-        String emailRegex = "^[A-Za-z0-9+_.-]+@(.+)$";
-        return email != null && email.matches(emailRegex);
+    public Timestamp getCreatedAt() {
+        return createdAt;
     }
 
-    public boolean isValidContactNumber() {
-        String phoneRegex = "^\\d{10}$";
-        return contactNumber != null && contactNumber.matches(phoneRegex);
+    public void setCreatedAt(Timestamp createdAt) {
+        this.createdAt = createdAt;
     }
 
-    // toString method for easy printing
+    public Timestamp getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(Timestamp updatedAt) {
+        this.updatedAt = updatedAt;
+    }
+
+    // Validate method
+    public boolean validate() {
+        if (name == null || name.trim().isEmpty()) {
+            return false;
+        }
+        if (phoneNumber == null || !phoneNumber.matches("\\d{10}")) {
+            return false;
+        }
+        if (email == null || !email.matches("^[A-Za-z0-9+_.-]+@(.+)$")) {
+            return false;
+        }
+        if (position == null || position.trim().isEmpty()) {
+            return false;
+        }
+        if (userId == null || userId.trim().isEmpty()) {
+            return false;
+        }
+   
+        if (status == null || status.trim().isEmpty()) {
+            return false;
+        }
+        return true;
+    }
+
     @Override
     public String toString() {
         return "Staff{" +
-                "staffId='" + staffId + '\'' +
+                "staffId=" + staffId +
                 ", name='" + name + '\'' +
+                ", phoneNumber='" + phoneNumber + '\'' +
+                ", email='" + email + '\'' +
                 ", position='" + position + '\'' +
-                ", department='" + department + '\'' +
+                ", userId='" + userId + '\'' +
                 ", status='" + status + '\'' +
+                ", createdAt=" + createdAt +
+                ", updatedAt=" + updatedAt +
                 '}';
     }
 }
