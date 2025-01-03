@@ -8,7 +8,7 @@ public class OwnerDashboard extends JFrame {
     private JPanel mainPanel;
     private JButton currentActiveButton;
 
-    public OwnerDashboard() {
+    public OwnerDashboard( ) {
         // Frame setup
         setTitle("Beach Resort Management System");
         setSize(1000, 700);

@@ -1,11 +1,13 @@
 package beachresort.ui;
 
+import beachresort.models.User;
 import beachresort.services.AuthenticationService;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.sql.SQLException;
+import java.util.Optional;
 
 public class LoginFrame extends JFrame {
     private JTextField usernameField;
@@ -20,7 +22,7 @@ public class LoginFrame extends JFrame {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
 
-      // Initialize authentication service
+        // Initialize authentication service
         try {
             authService = new AuthenticationService();
         } catch (Exception e) {
@@ -111,18 +113,18 @@ public class LoginFrame extends JFrame {
     private void performLogin(ActionEvent e) {
         // Validate input fields
         if (usernameField.getText().trim().isEmpty()) {
-            JOptionPane.showMessageDialog(this, 
-                "Username cannot be empty", 
-                "Validation Error", 
-                JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(this,
+                    "Username cannot be empty",
+                    "Validation Error",
+                    JOptionPane.WARNING_MESSAGE);
             return;
         }
 
         if (passwordField.getPassword().length == 0) {
-            JOptionPane.showMessageDialog(this, 
-                "Password cannot be empty", 
-                "Validation Error", 
-                JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(this,
+                    "Password cannot be empty",
+                    "Validation Error",
+                    JOptionPane.WARNING_MESSAGE);
             return;
         }
 
@@ -131,39 +133,42 @@ public class LoginFrame extends JFrame {
             String password = new String(passwordField.getPassword());
             String role = (String) roleComboBox.getSelectedItem();
 
-            if (authService.authenticateUser(username, password, role)) {
+            // Authenticate user and get User object
+            Optional<User> userOpt = authService.authenticateUser (username, password, role);
+
+            if (userOpt.isPresent()) {
+                User user = userOpt.get();
                 // Successful login
-                JOptionPane.showMessageDialog(this, 
-                    "Login Successful!", 
-                    "Success", 
-                    JOptionPane.INFORMATION_MESSAGE);
-                
+                JOptionPane.showMessageDialog(this,
+                        "Login Successful! User: " + user.getUsername(),
+                        "Success",
+                        JOptionPane.INFORMATION_MESSAGE);
+
                 // Open main application window based on role
-                openMainWindow(role);
-                
+                openMainWindow(role, user);
+
                 // Close login form
                 dispose();
             } else {
                 // Failed login
-                JOptionPane.showMessageDialog(this, 
-                    "Invalid username, password, or role", 
-                    "Login Failed", 
-                    JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this,
+                        "Invalid username, password, or role",
+                        "Login Failed",
+                        JOptionPane.ERROR_MESSAGE);
             }
         } catch (Exception ex) {
-            // Remove specific SQLException catch
-            JOptionPane.showMessageDialog(this, 
-                "Error: " + ex.getMessage(), 
-                "Login Error", 
-                JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this,
+                    "Error: " + ex.getMessage(),
+                    "Login Error",
+                    JOptionPane.ERROR_MESSAGE);
         }
     }
 
-    private void openMainWindow(String role) {
+    private void openMainWindow(String role, User user) {
         try {
             switch (role) {
                 case "CUSTOMER":
-                    new CustomerDashboard().setVisible(true);
+                    new CustomerDashboard(user).setVisible(true);
                     break;
                 case "STAFF":
                 case "OWNER":

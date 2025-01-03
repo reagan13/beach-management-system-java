@@ -100,6 +100,7 @@ public class UserRepository {
                             null,  // email removed
                             null   // full name removed
                     );
+                 
                     return Optional.of(user);
                 }
             }
@@ -109,18 +110,25 @@ public class UserRepository {
         return Optional.empty();
     }
 
-    public boolean validateUser(String username, String password, String role) {
-        String query = "SELECT * FROM users WHERE username = ? AND password = ? AND role = ?";
+    public Integer validateUser(String username, String password, String role) {
+        String query = "SELECT id FROM users WHERE username = ? AND password = ? AND role = ?";
         try (PreparedStatement pstmt = connection.prepareStatement(query)) {
             pstmt.setString(1, username);
             pstmt.setString(2, password);
             pstmt.setString(3, role);
             try (ResultSet rs = pstmt.executeQuery()) {
-                return rs.next();
+                if (rs.next()) {
+                    return rs.getInt("id"); // Return user ID if found
+                }
             }
         } catch (SQLException e) {
+            System.err.println("Error during user validation: " + e.getMessage());
             e.printStackTrace();
-            return false;
         }
+        return null; // Return null if no user matches
     }
+
+
+
+
 }
