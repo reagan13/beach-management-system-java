@@ -49,13 +49,29 @@ public class CustomerDashboard extends JFrame {
         // User and Logout Section
         JPanel userPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         JButton logoutButton = new JButton("Logout");
+        
         logoutButton.addActionListener(e -> {
-            int response = JOptionPane.showConfirmDialog(this, "Are you sure you want to logout?", "Confirm Logout", JOptionPane.YES_NO_OPTION);
-            if (response == JOptionPane.YES_OPTION) {
+            
+             int confirm = JOptionPane.showConfirmDialog(
+            this, 
+            "Are you sure you want to logout?", 
+            "Confirm Logout", 
+            JOptionPane.YES_NO_OPTION
+        );
+        
+            if (confirm == JOptionPane.YES_OPTION) {
+                // Close current dashboard
                 dispose();
+
+                // Open login frame
+                SwingUtilities.invokeLater(() -> {
+                    new LoginFrame().setVisible(true);
+                });
             }
+        
         });
 
+        
         userPanel.add(logoutButton);
         topBar.add(titleLabel, BorderLayout.WEST);
         topBar.add(userPanel, BorderLayout.EAST);
