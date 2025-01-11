@@ -142,16 +142,19 @@ public class StaffRepository {
     }
 
 
-    public boolean deleteStaff(String userId) {
-        String query = "DELETE FROM staff WHERE user_id = ?";
+    public boolean deleteStaff(int userId) {
+        String query = "UPDATE staff SET status = 'Terminated' WHERE staff_id = ?";
+            
         try (PreparedStatement pstmt = connection.prepareStatement(query)) {
-            pstmt.setString(1, userId);
+            pstmt.setInt(1, userId);
             int rowsAffected = pstmt.executeUpdate();
             return rowsAffected > 0;
+            
         } catch (SQLException e) {
-            System.err.println("Error deleting staff: " + e.getMessage());
+            System.err.println("Error terminating staff: " + e.getMessage());
             return false;
         }
+
     }
 
     public List<Staff> getAllStaff() {
@@ -159,7 +162,8 @@ public class StaffRepository {
         String query = "SELECT s.staff_id, s.user_id, u.username, u.password, u.email, u.full_name, u.address, u.contact_number, s.position,  s.status "
                 +
                 "FROM staff s " +
-                "JOIN users u ON s.user_id = u.id"; // Join to get user details
+                "JOIN users u ON s.user_id = u.id "+
+                "WHERE s.position != 'UNASSIGNED'"; 
 
         try (PreparedStatement pstmt = connection.prepareStatement(query);
                 ResultSet rs = pstmt.executeQuery()) {

@@ -46,7 +46,7 @@ public class StaffManagementPanel extends JPanel {
         JPanel staffListPanel = new JPanel(new BorderLayout());
 
         // Table Model Setup
-        String[] columnNames = {"User ID", "Name", "Position", "Phone", "Email", "Status"};
+        String[] columnNames = {"Staff ID", "Name", "Position", "Phone", "Email", "Status"};
         tableModel = new DefaultTableModel(columnNames, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
@@ -220,7 +220,7 @@ public class StaffManagementPanel extends JPanel {
                 }
             }
         });
-        
+
         panel.add(saveButton);
 
         JButton cancelButton = new JButton("Cancel");
@@ -259,17 +259,26 @@ public class StaffManagementPanel extends JPanel {
         panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
         // Input Fields
+
+        JTextField staffField = createLabeledTextField(panel, "Staff Id:");
+        staffField.setText(String.valueOf(existingStaff.getStaffId()));
+        staffField.setEditable(false);
+          
         JTextField nameField = createLabeledTextField(panel, "Full Name:");
         nameField.setText(existingStaff.getFullName());
+        nameField.setEditable(false);
 
         JTextField phoneField = createLabeledTextField(panel, "Phone Number:");
         phoneField.setText(existingStaff.getContactNumber());
+        phoneField.setEditable(false);
 
         JTextField emailField = createLabeledTextField(panel, "Email:");
         emailField.setText(existingStaff.getEmail());
+        emailField.setEditable(false);
 
         JComboBox<String> positionCombo = createPositionComboBox(panel, "Position:");
         positionCombo.setSelectedItem(existingStaff.getPosition());
+        positionCombo.setEditable(true);
 
         JTextField userIdField = createLabeledTextField(panel, "User  ID:");
         userIdField.setText(String.valueOf(existingStaff.getId()));
@@ -278,9 +287,30 @@ public class StaffManagementPanel extends JPanel {
         JComboBox<String> statusCombo = createStatusComboBox(panel, "Status:");
         statusCombo.setSelectedItem(existingStaff.getStatus());
 
+
         JButton saveButton = new JButton("Save");
         saveButton.addActionListener(saveEvent -> {
-            
+             // // Validate inputs
+            if (validateInputs(nameField, phoneField, emailField, userIdField)) {
+                try {
+                    // Logic to save the updated staff information
+                   
+                    // Save the updated staff information to the repository
+                    staffRepository.updateStaff( positionCombo.getSelectedItem().toString(),
+                        statusCombo.getSelectedItem().toString(),
+                        existingStaff.getStaffId());
+
+                   // Show success message
+                    JOptionPane.showMessageDialog(editStaffDialog, "Staff updated successfully.", "Success", JOptionPane.INFORMATION_MESSAGE);
+                    editStaffDialog.dispose();
+                } catch (Exception ex) {
+                    JOptionPane.showMessageDialog(editStaffDialog,
+                            "Error updating staff: " + ex.getMessage(),
+                            "Error",
+                            JOptionPane.ERROR_MESSAGE);
+                }
+        
+            }
         });
         panel.add(saveButton);
 
@@ -293,15 +323,24 @@ public class StaffManagementPanel extends JPanel {
     }
 
     private void deleteStaff(ActionEvent e) {
-        // Get selected row
+         // Get selected row
         int selectedRow = staffTable.getSelectedRow();
         if (selectedRow == -1) {
-            JOptionPane.showMessageDialog(this, "Please select a staff member to delete");
+            JOptionPane.showMessageDialog(this, "Please select a staff member to edit");
             return;
         }
 
         // Get user ID of selected staff
-        String userId = staffTable.getValueAt(selectedRow, 0).toString();
+        String userIdString = staffTable.getValueAt(selectedRow, 0).toString();
+        Integer userId = Integer.parseInt(userIdString);
+
+        // Fetch existing staff
+        Staff existingStaff = staffRepository.getStaffByStaffId(userId);
+        if (existingStaff == null) {
+            JOptionPane.showMessageDialog(this, "Staff not found");
+            return;
+        }
+
 
         // Confirm deletion
         int confirm = JOptionPane.showConfirmDialog(this, 
@@ -310,7 +349,7 @@ public class StaffManagementPanel extends JPanel {
             JOptionPane.YES_NO_OPTION);
         
         if (confirm == JOptionPane.YES_OPTION) {
-            if (staffRepository.deleteStaff(userId)) {
+            if (staffRepository.deleteStaff(existingStaff.getStaffId())) {
                 JOptionPane.showMessageDialog(this, "Staff Deleted Successfully!");
                 loadStaff(); // Refresh the staff list
             } else {
@@ -361,7 +400,7 @@ public class StaffManagementPanel extends JPanel {
 
     private JComboBox<String> createStatusComboBox(JPanel panel, String label) {
         panel.add(new JLabel(label));
-        String[] statuses = { "Active", "Inactive" ,"Terminated"};
+        String[] statuses = { "Active", "Inactive"};
         JComboBox<String> comboBox = new JComboBox<>(statuses);
         panel.add(comboBox);
         return comboBox;
