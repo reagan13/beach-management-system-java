@@ -6,13 +6,12 @@ import beachresort.services.AuthenticationService;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.sql.SQLException;
 import java.util.Optional;
 
 public class LoginFrame extends JFrame {
     private JTextField usernameField;
     private JPasswordField passwordField;
-    private JComboBox<String> roleComboBox;
+    private JComboBox<User.UserRole> roleComboBox; // Use enum for roles
     private AuthenticationService authService;
 
     public LoginFrame() {
@@ -26,10 +25,7 @@ public class LoginFrame extends JFrame {
         try {
             authService = new AuthenticationService();
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, 
-                "Failed to initialize authentication: " + e.getMessage(), 
-                "Initialization Error", 
-                JOptionPane.ERROR_MESSAGE);
+            showErrorDialog("Failed to initialize authentication: " + e.getMessage());
             dispose();
             return;
         }
@@ -57,30 +53,31 @@ public class LoginFrame extends JFrame {
         gbc.gridy = 1;
         gbc.gridwidth = 1;
         mainPanel.add(new JLabel("Username:"), gbc);
-        
+
         gbc.gridx = 1;
         usernameField = new JTextField(20);
         usernameField.setPreferredSize(new Dimension(200, 30));
+        usernameField.setToolTipText("Enter your username");
         mainPanel.add(usernameField, gbc);
 
         // Password Label and Field
         gbc.gridx = 0;
         gbc.gridy = 2;
         mainPanel.add(new JLabel("Password:"), gbc);
-        
+
         gbc.gridx = 1;
         passwordField = new JPasswordField(20);
         passwordField.setPreferredSize(new Dimension(200, 30));
+        passwordField.setToolTipText("Enter your password");
         mainPanel.add(passwordField, gbc);
 
         // Role Label and Combo Box
         gbc.gridx = 0;
         gbc.gridy = 3;
         mainPanel.add(new JLabel("Role:"), gbc);
-        
+
         gbc.gridx = 1;
-        String[] roles = {"CUSTOMER", "STAFF", "OWNER"};
-        roleComboBox = new JComboBox<>(roles);
+        roleComboBox = new JComboBox<>(User.UserRole.values()); // Use enum values
         roleComboBox.setPreferredSize(new Dimension(200, 30));
         mainPanel.add(roleComboBox, gbc);
 
@@ -113,31 +110,24 @@ public class LoginFrame extends JFrame {
     private void performLogin(ActionEvent e) {
         // Validate input fields
         if (usernameField.getText().trim().isEmpty()) {
-            JOptionPane.showMessageDialog(this,
-                    "Username cannot be empty",
-                    "Validation Error",
-                    JOptionPane.WARNING_MESSAGE);
+            showWarningDialog("Username cannot be empty");
             return;
         }
 
         if (passwordField.getPassword().length == 0) {
-            JOptionPane.showMessageDialog(this,
-                    "Password cannot be empty",
-                    "Validation Error",
-                    JOptionPane.WARNING_MESSAGE);
+            showWarningDialog("Password cannot be empty");
             return;
         }
 
         try {
             String username = usernameField.getText().trim();
             String password = new String(passwordField.getPassword());
-            String role = (String) roleComboBox.getSelectedItem();
-
+            User.UserRole role = (User.UserRole) roleComboBox.getSelectedItem();
+           
             // Authenticate user and get User object
-            Optional<User> userOpt = authService.authenticateUser (username, password, role);
+            User user = authService.authenticateUser(username, password, role.name());
 
-            if (userOpt.isPresent()) {
-                User user = userOpt.get();
+            if (user != null) {
                 // Successful login
                 JOptionPane.showMessageDialog(this,
                         "Login Successful! User: " + user.getUsername(),
@@ -151,43 +141,43 @@ public class LoginFrame extends JFrame {
                 dispose();
             } else {
                 // Failed login
-                JOptionPane.showMessageDialog(this,
-                        "Invalid username, password, or role",
-                        "Login Failed",
-                        JOptionPane.ERROR_MESSAGE);
+                showErrorDialog("Invalid username, password, or role");
             }
         } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this,
-                    "Error: " + ex.getMessage(),
-                    "Login Error",
-                    JOptionPane.ERROR_MESSAGE);
+            showErrorDialog("Error: " + ex.getMessage());
         }
     }
+    
 
-    private void openMainWindow(String role, User user) {
+    private void openMainWindow(User.UserRole role, User user) {
         try {
             switch (role) {
-                case "CUSTOMER":
+                case CUSTOMER:
                     new CustomerDashboard(user).setVisible(true);
                     break;
-                case "STAFF":
-                case "OWNER":
-                    new OwnerDashboard().setVisible(true);
+              
+                case OWNER:
+                    new OwnerDashboard(user).setVisible(true);
                     break;
                 default:
-                    JOptionPane.showMessageDialog(this, "Unsupported role");
+                    showErrorDialog("Unsupported role");
             }
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(this,
-                    "Error opening dashboard: " + e.getMessage(),
-                    "Dashboard Error",
-                    JOptionPane.ERROR_MESSAGE);
+            showErrorDialog("Error opening dashboard: " + e.getMessage());
         }
     }
 
     private void openRegisterDialog() {
         RegisterDialog registerDialog = new RegisterDialog(this);
         registerDialog.setVisible(true);
+    }
+
+    private void showErrorDialog(String message) {
+        JOptionPane.showMessageDialog(this, message, "Error", JOptionPane.ERROR_MESSAGE);
+    }
+
+    private void showWarningDialog(String message) {
+        JOptionPane.showMessageDialog(this, message, "Validation Error", JOptionPane.WARNING_MESSAGE);
     }
 
     public static void main(String[] args) {

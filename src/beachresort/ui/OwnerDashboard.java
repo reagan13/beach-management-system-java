@@ -1,6 +1,9 @@
 package beachresort.ui;
 
 import javax.swing.*;
+
+import beachresort.models.User;
+
 import java.awt.*;
 import java.awt.event.ActionEvent;
 
@@ -8,7 +11,7 @@ public class OwnerDashboard extends JFrame {
     private JPanel mainPanel;
     private JButton currentActiveButton;
 
-    public OwnerDashboard( ) {
+    public OwnerDashboard(User user) {
         // Frame setup
         setTitle("Beach Resort Management System");
         setSize(1000, 700);
@@ -28,8 +31,9 @@ public class OwnerDashboard extends JFrame {
         mainPanel.add(new CheckInOutPanel(), "Check In / Checkout"); // Add the new panel
         mainPanel.add(new ManageBookingsPanel(), "Manage Bookings");
         mainPanel.add(new RoomManagementPanel(), "Room Management");
-        mainPanel.add(new StaffManagementPanel(), "Staff Management");
+        // mainPanel.add(new StaffManagementPanel(), "Staff Management");
         mainPanel.add(new PaymentManagementPanel(), "Payment Management"); // Add the new panel
+        mainPanel.add(new OwnerDetailsPanel(user), "Details");
       
         add(mainPanel, BorderLayout.CENTER);
 
@@ -70,6 +74,7 @@ public class OwnerDashboard extends JFrame {
         JButton roomManagementButton = createStyledButton("Room Management");
         JButton staffManagementButton = createStyledButton("Staff Management");
         JButton paymentManagementButton = createStyledButton("Payment Management"); // New button
+        JButton detailsButton = createStyledButton("Details");
         
 
         // Add Navigation Buttons
@@ -79,6 +84,7 @@ public class OwnerDashboard extends JFrame {
         navigationPanel.add(roomManagementButton, gbc);
         navigationPanel.add(staffManagementButton, gbc);
         navigationPanel.add(paymentManagementButton, gbc); // Add the new button
+        navigationPanel.add(detailsButton, gbc);
     
 
         // Bottom Panel for Logout Button
@@ -101,6 +107,7 @@ public class OwnerDashboard extends JFrame {
         staffManagementButton.addActionListener(e -> showPanel("Staff Management"));
         checkInOutButton.addActionListener(e -> showPanel("Check In / Checkout")); // Action for new button
         paymentManagementButton.addActionListener(e -> showPanel("Payment Management")); // Action for new button
+        detailsButton.addActionListener(e -> showPanel("Details"));
         logoutButton.addActionListener(e -> handleLogout());
 
         // Combine Panels
@@ -149,9 +156,4 @@ public class OwnerDashboard extends JFrame {
         }
     }
 
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> {
-            new OwnerDashboard().setVisible(true);
-        });
-    }
 }

@@ -1,69 +1,58 @@
 package beachresort.models;
 
-public class Owner {
-    private int ownerId;
-    private String username;
-    private String fullName;
-    private String email;
-    private String contactNumber;
-    private String role;
+public class Owner extends User {
+    private String businessName;   // Name of the business owned by the owner
+    private String licenseNumber;   // License number for the business
 
-    // Constructor
-    public Owner(int ownerId, String username, String fullName, String email, String contactNumber, String role) {
-        this.ownerId = ownerId;
-        this.username = username;
-        this.fullName = fullName;
-        this.email = email;
-        this.contactNumber = contactNumber;
-        this.role = role;
+      // Constructor for existing owners (with ID)
+    public Owner(int id, String username, String password, String email, String fullName, String address, String contactNumber, String businessName, String licenseNumber) {
+        super(id, username, password, email, fullName, address, contactNumber); // Call the parent constructor
+        this.businessName = businessName;
+        this.licenseNumber = licenseNumber;
     }
 
-    // Getters and Setters
-    public int getOwnerId() {
-        return ownerId;
+    // Constructor for new owners (without ID)
+    public Owner(String username, String password, String email, String fullName, String address, String contactNumber,
+            String businessName, String licenseNumber) {
+        super(username, password, email, fullName, address, contactNumber); // Call the parent constructor
+        this.businessName = businessName;
+        this.licenseNumber = licenseNumber;
+    }
+   // Constructor for existing owners
+   public Owner(int id, int userId, String username, String password, String email, String fullName, String address,
+           String contactNumber, String businessName, String licenseNumber) {
+       super(id, username, password, email, fullName, address, contactNumber); // Call the parent constructor
+       this.businessName = businessName;
+       this.licenseNumber = licenseNumber;
+   }
+    
+    
+
+    // Getters and Setters for businessName and licenseNumber
+    public String getBusinessName() {
+        return businessName;
     }
 
-    public void setOwnerId(int ownerId) {
-        this.ownerId = ownerId;
+    public void setBusinessName(String businessName) {
+        this.businessName = businessName;
     }
 
-    public String getUsername() {
-        return username;
+    public String getLicenseNumber() {
+        return licenseNumber;
     }
 
-    public void setUsername(String username) {
-        this.username = username;
+    public void setLicenseNumber(String licenseNumber) {
+        this.licenseNumber = licenseNumber;
     }
 
-    public String getFullName() {
-        return fullName;
+    @Override
+    public UserRole getRole() {
+        return UserRole.OWNER; // Return the specific role for Owner
     }
 
-    public void setFullName(String fullName) {
-        this.fullName = fullName;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public String getContactNumber() {
-        return contactNumber;
-    }
-
-    public void setContactNumber(String contactNumber) {
-        this.contactNumber = contactNumber;
-    }
-
-    public String getRole() {
-        return role;
-    }
-
-    public void setRole(String role) {
-        this.role = role;
+    @Override
+    public String displayInfo() {
+        return String.format("Owner ID: %d, Username: %s, Email: %s, Full Name: %s, Address: %s, Business Name: %s, License Number: %s, Role: %s",
+                getId(), getUsername(), getEmail(), getFullName(), getAddress(), businessName, licenseNumber, getRole());
     }
 }

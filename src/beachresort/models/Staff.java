@@ -1,64 +1,48 @@
 package beachresort.models;
 
-import java.sql.Timestamp;
+import java.util.Date;
 
-public class Staff {
-    private int staffId;
-    private String name;
-    private String phoneNumber;
-    private String email;
-    private String position;
-    private String userId;
-    private String status;
-    private Timestamp createdAt;
-    private Timestamp updatedAt;
-
-    // Constructor
-    public Staff(String name, String phoneNumber, String email, 
-                 String position, String userId,
-                 String status, Timestamp createdAt, Timestamp updatedAt) {
-        this.name = name;
-        this.phoneNumber = phoneNumber;
-        this.email = email;
-        this.position = position;
-        this.userId = userId;
-
-        this.status = status;
-        this.createdAt = createdAt;
-        this.updatedAt = updatedAt;
+public class Staff extends User {
+    private int staffId;     // Unique identifier for the staff member
+    private String position; // Position of the staff member (e.g., Manager, Receptionist)
+    private String status;   // Employment status (e.g., Active, Inactive, Terminated)
+    private Date addDate;    // Date the staff member was added to the system
+   
+    // Constructor for existing staff (with ID)
+    public Staff(int id, int staffId, String username, String password, String email, String fullName, String address,
+            String contactNumber, String position, Date addDate, String status) {
+        super(id, username, password, email, fullName, address, contactNumber); // Call the parent constructor
+        this.staffId = staffId; // Corresponds to staff_id in the database
+        this.position = position; // Corresponds to position in the database
+        this.addDate = addDate; // Corresponds to add_date in the database
+        this.status = status; // Corresponds to status in the database
     }
 
-    // Getters and Setters
+
+    // Constructor for new staff (without ID)
+    public Staff(String username, String password, String email, String fullName, String address, String contactNumber,
+            String position, Date addDate, String status) {
+        super(username, password, email, fullName, address, contactNumber); // Call the parent constructor
+        this.position = position;
+        this.addDate = addDate;
+        this.status = status;
+    }
+
+
+
+    public Staff(String username, String password, String email, String fullName, String address, String contactNumber) {
+        super(username, password, email, fullName, address, contactNumber); // Call the parent constructor
+    }
+    
+    
+    // Getter and Setter for position
+
     public int getStaffId() {
         return staffId;
     }
 
     public void setStaffId(int staffId) {
         this.staffId = staffId;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getPhoneNumber() {
-        return phoneNumber;
-    }
-
-    public void setPhoneNumber(String phoneNumber) {
-        this.phoneNumber = phoneNumber;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
     }
 
     public String getPosition() {
@@ -69,14 +53,16 @@ public class Staff {
         this.position = position;
     }
 
-    public String getUserId() {
-        return userId;
+    // Getter and Setter for add date
+    public Date getAddDate() {
+        return addDate;
     }
 
-    public void setUserId(String userId) {
-        this.userId = userId;
+    public void setAddDate(Date addDate) {
+        this.addDate = addDate;
     }
 
+    // Getter and Setter for status
     public String getStatus() {
         return status;
     }
@@ -85,58 +71,14 @@ public class Staff {
         this.status = status;
     }
 
-    public Timestamp getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(Timestamp createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public Timestamp getUpdatedAt() {
-        return updatedAt;
-    }
-
-    public void setUpdatedAt(Timestamp updatedAt) {
-        this.updatedAt = updatedAt;
-    }
-
-    // Validate method
-    public boolean validate() {
-        if (name == null || name.trim().isEmpty()) {
-            return false;
-        }
-        if (phoneNumber == null || !phoneNumber.matches("\\d{10}")) {
-            return false;
-        }
-        if (email == null || !email.matches("^[A-Za-z0-9+_.-]+@(.+)$")) {
-            return false;
-        }
-        if (position == null || position.trim().isEmpty()) {
-            return false;
-        }
-        if (userId == null || userId.trim().isEmpty()) {
-            return false;
-        }
-   
-        if (status == null || status.trim().isEmpty()) {
-            return false;
-        }
-        return true;
+    @Override
+    public UserRole getRole() {
+        return UserRole.STAFF; // Return the specific role for Staff
     }
 
     @Override
     public String toString() {
-        return "Staff{" +
-                "staffId=" + staffId +
-                ", name='" + name + '\'' +
-                ", phoneNumber='" + phoneNumber + '\'' +
-                ", email='" + email + '\'' +
-                ", position='" + position + '\'' +
-                ", userId='" + userId + '\'' +
-                ", status='" + status + '\'' +
-                ", createdAt=" + createdAt +
-                ", updatedAt=" + updatedAt +
-                '}';
+        return String.format("Staff ID: %d, User ID: %d, Username: %s, Email: %s, Full Name: %s, Address: %s, Position: %s, Add Date: %s, Status: %s, Role: %s",
+                staffId, getId(), getUsername(), getEmail(), getFullName(), getAddress(), position, addDate, status, getRole());
     }
 }

@@ -12,10 +12,12 @@ import java.util.List;
 
 public class StaffRepository {
     private Connection connection;
+    private UserRepository userRepository; // Reference to UserRepository
 
     public StaffRepository() {
         try {
             this.connection = DatabaseConnection.getConnection();
+            this.userRepository = new UserRepository(); // Initialize UserRepository
             createStaffTableIfNotExists();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -25,14 +27,11 @@ public class StaffRepository {
     private void createStaffTableIfNotExists() {
         String createTableQuery = "CREATE TABLE IF NOT EXISTS staff (" +
                 "   staff_id INT AUTO_INCREMENT PRIMARY KEY," +
-                "   user_id VARCHAR(50) UNIQUE NOT NULL," +
-                "   name VARCHAR(100) NOT NULL," +
-                "   phone_number VARCHAR(15) NOT NULL," +
-                "   email VARCHAR(100) NOT NULL UNIQUE," +
+                "   user_id VARCHAR(50)," + 
                 "   position ENUM('Manager', 'Receptionist', 'Housekeeping', 'Maintenance') NOT NULL," +
-                "   status ENUM('Active', 'Inactive') NOT NULL," +
-                "   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP," +
-                "   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP" +
+                "   status ENUM('Active', 'Inactive','Terminated') NOT NULL," +
+                "   add_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP," + // Add date column
+                "   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP" +
                 ")";
         try (PreparedStatement pstmt = connection.prepareStatement(createTableQuery)) {
             pstmt.execute();
@@ -42,51 +41,29 @@ public class StaffRepository {
         }
     }
 
-    private boolean validateUserForStaff(String userId) throws SQLException {
-        String query = "SELECT role FROM users WHERE id = ?";
-        try (PreparedStatement pstmt = connection.prepareStatement(query)) {
-            pstmt.setString(1, userId);
-            try (ResultSet rs = pstmt.executeQuery()) {
-                if (rs.next()) {
-                    String role = rs.getString("role");
-                    return "staff".equalsIgnoreCase(role);
-                }
-            }
-        }
-        return false;
-    }
-    
     public boolean addStaff(Staff staff) {
         try {
-            // Validate user exists and has staff role
-            if (!validateUserForStaff(staff.getUserId())) {
-                System.err.println("Invalid user or user is not a staff");
+            // Validate user exists
+            if (!userRepository.usernameExists(staff.getUsername())) {
+                System.err.println("Invalid user ID");
                 return false;
             }
 
             // Check if staff already exists
-            if (staffExists(staff.getUserId())) {
+            if (staffExists(staff.getUsername())) {
                 System.err.println("Staff with this user ID already exists");
                 return false;
             }
 
-            // Check for existing email
-            if (emailExists(staff.getEmail())) {
-                System.err.println("Email already exists");
-                return false;
-            }
-
             String query = "INSERT INTO staff " +
-                    "(user_id, name, phone_number, email, position, status) " +
-                    "VALUES (?, ?, ?, ?, ?, ?)";
+                    "(user_id, position, status, add_date) " +
+                    "VALUES (?, ?, ?, ?)";
 
             try (PreparedStatement pstmt = connection.prepareStatement(query)) {
-                pstmt.setString(1, staff.getUserId());
-                pstmt.setString(2, staff.getName());
-                pstmt.setString(3, staff.getPhoneNumber());
-                pstmt.setString(4, staff.getEmail());
-                pstmt.setString(5, staff.getPosition());
-                pstmt.setString(6, staff.getStatus());
+                pstmt.setString(1, staff.getUsername());
+                pstmt.setString(2, staff.getPosition());
+                pstmt.setString(3, staff.getStatus());
+                pstmt.setTimestamp(4, new java.sql.Timestamp(staff.getAddDate().getTime())); // Set add date
 
                 int rowsAffected = pstmt.executeUpdate();
                 return rowsAffected > 0;
@@ -96,148 +73,102 @@ public class StaffRepository {
             return false;
         }
     }
-    
 
     public boolean updateStaff(Staff staff) {
-        try {
-            // Validate user exists and has staff role
-            if (!validateUserForStaff(staff.getUserId())) {
-                System.err.println("Invalid user or user is not a staff");
-                return false;
-            }
+        String query = "UPDATE staff SET " +
+                "position = ?, status = ? " +
+                "WHERE staff_id = ?";
 
-            String query = "UPDATE staff SET " +
-                    "name = ?, phone_number = ?, email = ?, " +
-                    "position = ?, status = ? " +
-                    "WHERE user_id = ?";
+        try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+            pstmt.setString(1, staff.getPosition());
+            pstmt.setString(2, staff.getStatus());
+            pstmt.setString(3, staff.getUsername());
 
-            try (PreparedStatement pstmt = connection.prepareStatement(query)) {
-                pstmt.setString(1, staff.getName());
-                pstmt.setString(2, staff.getPhoneNumber());
-                pstmt.setString(3, staff.getEmail());
-                pstmt.setString(4, staff.getPosition());
-                pstmt.setString(5, staff.getStatus());
-                pstmt.setString(6, staff.getUserId());
-
-                int rowsAffected = pstmt.executeUpdate();
-                return rowsAffected > 0;
-            }
+            int rowsAffected = pstmt.executeUpdate();
+            return rowsAffected > 0;
         } catch (SQLException e) {
             System.err.println("Error updating staff: " + e.getMessage());
             return false;
         }
     }
-    
 
-    // Check if email already exists
-    // Check if email already exists
-    private boolean emailExists(String email) throws SQLException {
-        String query = "SELECT COUNT(*) FROM staff WHERE email = ?";
+    public Staff getStaffByStaffId(int staffId) {
+        String query = "SELECT s.staff_id, s.position, s.status, s.add_date, u.username, u.password, u.email, u.full_name, u.address, u.contact_number "
+                +
+                "FROM staff s " +
+                "JOIN user u ON s.user_id = u.id " +
+                "WHERE s.staff_id = ?";
         try (PreparedStatement pstmt = connection.prepareStatement(query)) {
-            pstmt.setString(1, email);
+            pstmt.setInt(1, staffId); // Use staffId as an integer
             try (ResultSet rs = pstmt.executeQuery()) {
                 if (rs.next()) {
-                    return rs.getInt(1) > 0;
-                }
-            }
-        }
-        return false;
-    }
-    
-    // Validate user exists in users table
-    private boolean validateUserExists(String userId) throws SQLException {
-        String query = "SELECT COUNT(*) FROM users WHERE id = ?";
-        try (PreparedStatement pstmt = connection.prepareStatement(query)) {
-            pstmt.setString(1, userId);
-            try (ResultSet rs = pstmt.executeQuery()) {
-                if (rs.next()) {
-                    return rs.getInt(1) > 0;
-                }
-            }
-        }
-        return false;
-    }
+                    return new Staff(
+                            rs.getInt("id"), // id from the user table (assuming this is the primary key for the User class)
+                            rs.getInt("staff_id"), // staffId from the staff table
+                            rs.getString("username"), // username from the user table
+                            rs.getString("password"), // password from the user table
+                            rs.getString("email"), // email from the user table
+                            rs.getString("full_name"), // fullName from the user table
+                            rs.getString("address"), // address from the user table
+                            rs.getString("contact_number"), // contact number from the user table
+                            rs.getString("position"), // position from the staff table
+                            rs.getTimestamp("add_date"), // addDate from the staff table
+                            rs.getString("status") // status from the staff table
+                    );
 
-    public Staff getStaffByUserId(String userId) {
-        try {
-            // Validate user exists and has staff role
-            if (!validateUserForStaff(userId)) {
-                System.err.println("Invalid user or user is not a staff");
-                return null;
-            }
-
-            String query = "SELECT * FROM staff WHERE user_id = ?";
-            try (PreparedStatement pstmt = connection.prepareStatement(query)) {
-                pstmt.setString(1, userId);
-                try (ResultSet rs = pstmt.executeQuery()) {
-                    if (rs.next()) {
-                        return new Staff(
-                            rs.getString("name"),
-                            rs.getString("phone_number"),
-                            rs.getString("email"),
-                            rs.getString("position"),
-                            rs.getString("user_id"),
-                            rs.getString("status"),
-                            rs.getTimestamp("created_at"),
-                            rs.getTimestamp("updated_at")
-                        );
-                    }
                 }
             }
         } catch (SQLException e) {
-            System.err.println("Error retrieving staff by user ID: " + e.getMessage());
+            System.err.println("Error retrieving staff by staff ID: " + e.getMessage());
         }
         return null;
     }
 
-    public boolean deleteStaff(String userId) {
-        try {
-            // Validate user exists and has staff role
-            if (!validateUserForStaff(userId)) {
-                System.err.println("Invalid user or user is not a staff");
-                return false;
-            }
 
-            String query = "DELETE FROM staff WHERE user_id = ?";
-            try (PreparedStatement pstmt = connection.prepareStatement(query)) {
-                pstmt.setString(1, userId);
-                int rowsAffected = pstmt.executeUpdate();
-                return rowsAffected > 0;
-            }
+    public boolean deleteStaff(String userId) {
+        String query = "DELETE FROM staff WHERE user_id = ?";
+        try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+            pstmt.setString(1, userId);
+            int rowsAffected = pstmt.executeUpdate();
+            return rowsAffected > 0;
         } catch (SQLException e) {
             System.err.println("Error deleting staff: " + e.getMessage());
             return false;
         }
     }
 
-    
-
     public List<Staff> getAllStaff() {
         List<Staff> staffList = new ArrayList<>();
-        String query = "SELECT * FROM staff";
+        String query = "SELECT s.staff_id, s.user_id, u.username, u.password, u.email, u.full_name, u.address, u.contact_number, s.position, s.add_date, s.status "
+                +
+                "FROM staff s " +
+                "JOIN user u ON s.user_id = u.id"; // Join to get user details
+
         try (PreparedStatement pstmt = connection.prepareStatement(query);
                 ResultSet rs = pstmt.executeQuery()) {
             while (rs.next()) {
-                Staff staff = new Staff(
-                        rs.getString("name"),
-                        rs.getString("phone_number"),
-                        rs.getString("email"),
-                        rs.getString("position"),
-                        rs.getString("user_id"),
-                        rs.getString("status"),
-                        rs.getTimestamp("created_at"),
-                        rs.getTimestamp("updated_at"));
-                staffList.add(staff);
+                staffList.add(new Staff(
+                        rs.getInt("id"), // id from the user table
+                        rs.getInt("staff_id"), // staffId from the staff table
+                        rs.getString("username"), // username from the user table
+                        rs.getString("password"), // password from the user table
+                        rs.getString("email"), // email from the user table
+                        rs.getString("full_name"), // fullName from the user table
+                        rs.getString("address"), // address from the user table
+                        rs.getString("contact_number"), // contact number from the user table
+                        rs.getString("position"), // position from the staff table
+                        rs.getTimestamp("add_date"), // addDate from the staff table
+                        rs.getString("status") // status from the staff table
+                ));
             }
         } catch (SQLException e) {
-            System.err.println("Error retrieving staff: " + e.getMessage());
+            System.err.println("Error retrieving all staff: " + e.getMessage());
         }
         return staffList;
     }
-    
-    
-    // Check if staff with this user ID already exists
-    private boolean staffExists(String userId) throws SQLException {
+
+
+    private boolean staffExists(String userId) {
         String query = "SELECT COUNT(*) FROM staff WHERE user_id = ?";
         try (PreparedStatement pstmt = connection.prepareStatement(query)) {
             pstmt.setString(1, userId);
@@ -246,8 +177,9 @@ public class StaffRepository {
                     return rs.getInt(1) > 0;
                 }
             }
+        } catch (SQLException e) {
+            System.err.println("Error checking if staff exists: " + e.getMessage());
         }
         return false;
     }
-
 }
