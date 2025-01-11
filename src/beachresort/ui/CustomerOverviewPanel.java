@@ -10,10 +10,10 @@ import java.awt.*;
 import java.sql.SQLException;
 
 public class CustomerOverviewPanel extends JPanel {
-    private Customer customer; // The customer object to display and update
-    private CustomerRepository customerRepository; // Repository to handle database operations
-    private User user; // The user object to display and update
-    private UserRepository userRepository; // Repository to handle database operations
+    private Customer customer; 
+    private CustomerRepository customerRepository; 
+    private User user; 
+    private UserRepository userRepository;
 
     // Text fields for customer details
     private JTextField usernameField;
@@ -62,7 +62,7 @@ public class CustomerOverviewPanel extends JPanel {
         JButton updateButton = new JButton("Update Customer");
         updateButton.addActionListener(e -> updateCustomer());
         updateButton.setAlignmentX(Component.CENTER_ALIGNMENT);
-        add(Box.createRigidArea(new Dimension(0, 10))); // Add space before the button
+        add(Box.createRigidArea(new Dimension(0, 10))); 
         add(updateButton);
     }
 
@@ -105,7 +105,7 @@ public class CustomerOverviewPanel extends JPanel {
         panel.add(new JLabel(labelText), gbc);
         
         gbc.gridx = 1;
-        gbc.gridwidth = GridBagConstraints.REMAINDER; // Make the text field span to the right
+        gbc.gridwidth = GridBagConstraints.REMAINDER; 
         panel.add(textField, gbc);
     }
 
