@@ -40,6 +40,7 @@ public class CustomerOverviewPanel extends JPanel {
 
         // Initialize text fields with current customer details
         usernameField = new JTextField(user.getUsername());
+        usernameField.setEditable(false); 
         emailField = new JTextField(user.getEmail());
         fullNameField = new JTextField(user.getFullName());
         addressField = new JTextField(user.getAddress());

@@ -22,11 +22,11 @@ public class AbsenceRepository {
     private void createAbsenceTableIfNotExists() {
         String createTableQuery = 
             "CREATE TABLE IF NOT EXISTS absences (" +
-            "   absence_id INT AUTO_INCREMENT PRIMARY KEY," +
-            "   staff_id INT NOT NULL," + 
+                        "   absence_id INT AUTO_INCREMENT PRIMARY KEY," +
+                        "   user_id INT NOT NULL," +
             "   leave_type VARCHAR(50) NOT NULL," +
-            "   start_date TIMESTAMP NOT NULL," +
-            "   end_date TIMESTAMP NOT NULL," +
+            "   start_date DATE NOT NULL," +
+            "   end_date DATE NOT NULL," +
             "   status ENUM('Pending', 'Approved', 'Rejected') NOT NULL," +
             "   reason TEXT," +
             "   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP," +
@@ -57,20 +57,20 @@ public class AbsenceRepository {
     public boolean addAbsence(Absence absence) {
         try {
             // Validate staff user
-            if (!validateStaffUser (absence.getStaffID())) {
+            if (!validateStaffUser (absence.getUserId())) {
                 System.err.println("Invalid staff user");
                 return false;
             }
 
             String query = "INSERT INTO absences " +
-                           "(staff_id, leave_type, start_date, end_date, status, reason) " +
+                           "(user_id, leave_type, start_date, end_date, status, reason) " +
                            "VALUES (?, ?, ?, ?, ?, ?)";
             
             try (PreparedStatement pstmt = connection.prepareStatement(query)) {
-                pstmt.setInt(1, absence.getStaffID());
+                pstmt.setInt(1, absence.getUserId());
                 pstmt.setString(2, absence.getLeaveType());
-                pstmt.setTimestamp(3, absence.getStartDate());
-                pstmt.setTimestamp(4, absence.getEndDate());
+                pstmt.setDate(3, absence.getStartDate());
+                pstmt.setDate(4, absence.getEndDate());
                 pstmt.setString(5, absence.getStatus());
                 pstmt.setString(6, absence.getReason());
                 
@@ -83,31 +83,30 @@ public class AbsenceRepository {
         }
     }
 
-    public List<Absence> getAbsencesByStaffId(int staffId) {
+    public List<Absence> getAbsencesByUserId(int userId) {
         List<Absence> absences = new ArrayList<>();
         try {
             // Validate staff user
-            if (!validateStaffUser (staffId)) {
+            if (!validateStaffUser(userId)) {
                 System.err.println("Invalid staff user");
                 return absences;
             }
 
-            String query = "SELECT * FROM absences WHERE staff_id = ? ORDER BY start_date DESC";
+            String query = "SELECT * FROM absences WHERE user_id = ? ORDER BY start_date DESC";
             try (PreparedStatement pstmt = connection.prepareStatement(query)) {
-                pstmt.setInt(1, staffId);
+                pstmt.setInt(1, userId);
                 try (ResultSet rs = pstmt.executeQuery()) {
                     while (rs.next()) {
                         Absence absence = new Absence(
-                            rs.getInt("absence_id"),
-                            rs.getInt("staff_id"),
-                            rs.getString("leave_type"),
-                            rs.getTimestamp("start_date"),
-                            rs.getTimestamp("end_date"),
-                            rs.getString("status"),
-                            rs.getString("reason"),
-                            rs.getTimestamp("created_at"),
-                            rs.getTimestamp("updated_at")
-                        );
+                                rs.getInt("absence_id"),
+                                rs.getInt("user_id"),
+                                rs.getString("leave_type"),
+                                rs.getDate("start_date"),
+                                rs.getDate("end_date"),
+                                rs.getString("status"),
+                                rs.getString("reason"),
+                                rs.getTimestamp("created_at"),
+                                rs.getTimestamp("updated_at"));
                         absences.add(absence);
                     }
                 }
@@ -117,6 +116,58 @@ public class AbsenceRepository {
         }
         return absences;
     }
+    
+    
+    
+    public Absence getAbsenceById(int absenceId) {
+        String query = "SELECT * FROM absences WHERE absence_id = ?";
+        try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+            pstmt.setInt(1, absenceId);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    return new Absence(
+                            rs.getInt("absence_id"),
+                            rs.getInt("user_id"),
+                            rs.getString("leave_type"),
+                            rs.getDate("start_date"),
+                            rs.getDate("end_date"),
+                            rs.getString("status"),
+                            rs.getString("reason"),
+                            rs.getTimestamp("created_at"),
+                            rs.getTimestamp("updated_at"));
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Error retrieving absence by ID: " + e.getMessage());
+        }
+        return null;
+    }
+    
+    public List<Absence> getAllLeaveRequests() {
+        List<Absence> absences = new ArrayList<>();
+        String query = "SELECT * FROM absences ORDER BY start_date DESC";
+        try (PreparedStatement pstmt = connection.prepareStatement(query);
+                ResultSet rs = pstmt.executeQuery()) {
+            while (rs.next()) {
+                Absence absence = new Absence(
+                        rs.getInt("absence_id"),
+                        rs.getInt("user_id"),
+                        rs.getString("leave_type"),
+                        rs.getDate("start_date"),
+                        rs.getDate("end_date"),
+                        rs.getString("status"),
+                        rs.getString("reason"),
+                        rs.getTimestamp("created_at"),
+                        rs.getTimestamp("updated_at"));
+                absences.add(absence);
+            }
+        } catch (SQLException e) {
+            System.err.println("Error retrieving all leave requests: " + e.getMessage());
+        }
+        return absences;
+    }
+
+    
 
     public boolean updateAbsenceStatus(int absenceId, String newStatus) {
         try {
@@ -143,10 +194,10 @@ public class AbsenceRepository {
                 while (rs.next()) {
                     Absence absence = new Absence(
                         rs.getInt("absence_id"),
-                        rs.getInt("staff_id"),
+                        rs.getInt("user_id"),
                         rs.getString("leave_type"),
-                        rs.getTimestamp("start_date"),
-                        rs.getTimestamp("end_date"),
+                        rs.getDate("start_date"),
+                        rs.getDate("end_date"),
                         rs.getString("status"),
                         rs.getString("reason"),
                         rs.getTimestamp("created_at"),

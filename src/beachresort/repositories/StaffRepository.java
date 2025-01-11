@@ -121,22 +121,21 @@ public class StaffRepository {
                 "JOIN users u ON s.user_id = u.id " +
                 "WHERE s.staff_id = ?";
         try (PreparedStatement pstmt = connection.prepareStatement(query)) {
-            pstmt.setInt(1, staffId); 
+            pstmt.setInt(1, staffId);
             try (ResultSet rs = pstmt.executeQuery()) {
                 if (rs.next()) {
                     return new Staff(
                             rs.getInt("user_id"),
-                            rs.getInt("staff_id"), 
-                            rs.getString("username"), 
-                            rs.getString("password"), 
-                            rs.getString("email"), 
-                            rs.getString("full_name"), 
-                            rs.getString("address"), 
-                            rs.getString("contact_number"), 
-                            rs.getString("position"), 
-                            rs.getString("status") ,
-                            rs.getString("task") 
-                    );
+                            rs.getInt("staff_id"),
+                            rs.getString("username"),
+                            rs.getString("password"),
+                            rs.getString("email"),
+                            rs.getString("full_name"),
+                            rs.getString("address"),
+                            rs.getString("contact_number"),
+                            rs.getString("position"),
+                            rs.getString("status"),
+                            rs.getString("task"));
 
                 }
             }
@@ -145,7 +144,6 @@ public class StaffRepository {
         }
         return null;
     }
-
 
     public boolean deleteStaff(int userId) {
         String query = "UPDATE staff SET status = 'Terminated' WHERE staff_id = ?";
@@ -167,30 +165,59 @@ public class StaffRepository {
         String query = "SELECT s.staff_id, s.user_id, u.username, u.password, u.email, u.full_name, u.address, u.contact_number, s.position,  s.status, s.task "
                 +
                 "FROM staff s " +
-                "JOIN users u ON s.user_id = u.id "+
-                "WHERE s.position != 'UNASSIGNED'"; 
+                "JOIN users u ON s.user_id = u.id " +
+                "WHERE s.position != 'UNASSIGNED'";
 
         try (PreparedStatement pstmt = connection.prepareStatement(query);
                 ResultSet rs = pstmt.executeQuery()) {
             while (rs.next()) {
                 staffList.add(new Staff(
-                        rs.getInt("user_id"), 
-                        rs.getInt("staff_id"), 
-                        rs.getString("username"), 
-                        rs.getString("password"), 
-                        rs.getString("email"), 
-                        rs.getString("full_name"), 
-                        rs.getString("address"), 
-                        rs.getString("contact_number"), 
-                        rs.getString("position"), 
+                        rs.getInt("user_id"),
+                        rs.getInt("staff_id"),
+                        rs.getString("username"),
+                        rs.getString("password"),
+                        rs.getString("email"),
+                        rs.getString("full_name"),
+                        rs.getString("address"),
+                        rs.getString("contact_number"),
+                        rs.getString("position"),
                         rs.getString("status"),
-                        rs.getString("task")
-                ));
+                        rs.getString("task")));
             }
         } catch (SQLException e) {
             System.err.println("Error retrieving all staff: " + e.getMessage());
         }
         return staffList;
+    }
+
+    public Staff getStaffByUserId (int userId) {
+        String query = "SELECT s.staff_id, s.user_id, u.username, u.password, u.email, u.full_name, u.address, u.contact_number, s.position, s.status, s.task " +
+                "FROM staff s " +
+                "JOIN users u ON s.user_id = u.id " +
+                "WHERE s.user_id = ?";
+        try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+            pstmt.setInt(1, userId);
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    return new Staff(
+                            rs.getInt("user_id"),
+                            rs.getInt("staff_id"),
+                            rs.getString("username"),
+                            rs.getString("password"),
+                            rs.getString("email"),
+                            rs.getString("full_name"),
+                            rs.getString("address"),
+                            rs.getString("contact_number"),
+                            rs.getString("position"),
+                            rs.getString("status"),
+                            rs.getString("task"));
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Error retrieving staff by user ID: " + e.getMessage());
+        }
+        return null;
     }
 
 

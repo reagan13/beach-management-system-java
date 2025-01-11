@@ -1,23 +1,36 @@
 package beachresort.models;
 
+import java.sql.Date;
 import java.sql.Timestamp;
 
 public class Absence {
     private int absenceId;
-    private int staffId;
+    private int userId;
     private String leaveType;
-    private Timestamp startDate;
-    private Timestamp endDate;
+    private Date startDate;
+    private Date endDate;
     private String status; 
     private String reason;
     private Timestamp createdAt;
     private Timestamp updatedAt;
 
+    
     // Constructor
-    public Absence(int staffId, String leaveType, Timestamp startDate, 
-                   Timestamp endDate, String status, String reason, 
+    public Absence(int userId, String leaveType, Date startDate, 
+            Date endDate, String status, String reason) {
+        this.userId = userId;
+        this.leaveType = leaveType;
+        this.startDate = startDate;
+        this.endDate = endDate;
+        this.status = status;
+        this.reason = reason;
+    }
+    
+    // Constructor
+    public Absence(int userId, String leaveType, Date startDate, 
+                   Date endDate, String status, String reason, 
             Timestamp createdAt, Timestamp updatedAt) {
-        this.staffId = staffId;
+        this.userId = userId;
         this.leaveType = leaveType;
         this.startDate = startDate;
         this.endDate = endDate;
@@ -27,12 +40,13 @@ public class Absence {
         this.updatedAt = updatedAt;
     }
     
-    // Constructor
-    public Absence(int absenceId,int staffId, String leaveType, Timestamp startDate, 
-                   Timestamp endDate, String status, String reason, 
+ 
+       // Constructor
+    public Absence(int absenceId,int userId, String leaveType, Date startDate, 
+                   Date endDate, String status, String reason, 
             Timestamp createdAt, Timestamp updatedAt) {
         this.absenceId = absenceId;
-        this.staffId = staffId;
+        this.userId = userId;
         this.leaveType = leaveType;
         this.startDate = startDate;
         this.endDate = endDate;
@@ -40,6 +54,18 @@ public class Absence {
         this.reason = reason;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
+    }
+       // Constructor
+    public Absence(int absenceId,int userId, String leaveType, Date startDate, 
+                   Date endDate, String status, String reason 
+        ) {
+        this.absenceId = absenceId;
+        this.userId = userId;
+        this.leaveType = leaveType;
+        this.startDate = startDate;
+        this.endDate = endDate;
+        this.status = status;
+        this.reason = reason;
     }
 
     // Getters and Setters
@@ -52,12 +78,12 @@ public class Absence {
         this.absenceId = absenceId;
     }
 
-    public int getStaffID() {
-        return staffId;
+    public int getUserId() {
+        return userId;
     }
 
-    public void setStaffId(int staffId) {
-        this.staffId = staffId;
+    public void setUserId(int userId) {
+        this.userId = userId;
     }
 
     public String getLeaveType() {
@@ -67,19 +93,19 @@ public class Absence {
         this.leaveType = leaveType;
     }
 
-    public Timestamp getStartDate() {
+    public Date getStartDate() {
         return startDate;
     }
 
-    public void setStartDate(Timestamp startDate) {
+    public void setStartDate(Date startDate) {
         this.startDate = startDate;
     }
 
-    public Timestamp getEndDate() {
+    public Date getEndDate() {
         return endDate;
     }
 
-    public void setEndDate(Timestamp endDate) {
+    public void setEndDate(Date endDate) {
         this.endDate = endDate;
     }
 

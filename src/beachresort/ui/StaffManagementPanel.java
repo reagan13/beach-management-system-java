@@ -1,7 +1,9 @@
 package beachresort.ui;
 
+import beachresort.models.Absence;
 import beachresort.models.Staff;
 import beachresort.repositories.StaffRepository;
+import beachresort.repositories.AbsenceRepository;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -14,11 +16,13 @@ public class StaffManagementPanel extends JPanel {
     private JTable staffTable;
     private DefaultTableModel tableModel;
     private StaffRepository staffRepository;
+    private AbsenceRepository absenceRepository;
     private JTabbedPane tabbedPane;
 
     public StaffManagementPanel() {
         // Initialize repository
         staffRepository = new StaffRepository();
+        absenceRepository = new AbsenceRepository();
 
         // Set layout
         setLayout(new BorderLayout());
@@ -87,12 +91,16 @@ public class StaffManagementPanel extends JPanel {
     }
 
     private JPanel createLeaveRequestsPanel() {
+    
         JPanel leaveRequestsPanel = new JPanel(new BorderLayout());
+    
 
         // Leave Requests Table
-        String[] leaveColumnNames = {"Staff Name", "Leave Type", "Start Date", "End Date", "Status", "Reason"};
+        String[] leaveColumnNames = {"Absence ID", "Staff ID", "Leave Type", "Start Date", "End Date", "Status", "Reason"};
         DefaultTableModel leaveTableModel = new DefaultTableModel(leaveColumnNames, 0);
         JTable leaveTable = new JTable(leaveTableModel);
+        leaveTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION); // Allow single selection
+        
 
         JScrollPane scrollPane = new JScrollPane(leaveTable);
         leaveRequestsPanel.add(scrollPane, BorderLayout.CENTER);
@@ -109,11 +117,86 @@ public class StaffManagementPanel extends JPanel {
 
         leaveRequestsPanel.add(leaveButtonPanel, BorderLayout.SOUTH);
 
-        // TODO: Implement leave request loading and action methods
+        // Load leave requests into the table
         loadLeaveRequests(leaveTableModel);
+
+        // Action for Approve button
+        approveButton.addActionListener(e -> {
+            int selectedRow = leaveTable.getSelectedRow();
+            if (selectedRow == -1) {
+                JOptionPane.showMessageDialog(leaveRequestsPanel, "Please select a leave request to approve.");
+                return;
+            }
+            int absenceId = (int) leaveTableModel.getValueAt(selectedRow, 0); // Get Absence ID
+            // Call method to approve the absence
+            if (absenceRepository.updateAbsenceStatus(absenceId, "Approved")) {
+                JOptionPane.showMessageDialog(leaveRequestsPanel, "Leave request approved successfully.");
+                loadLeaveRequests(leaveTableModel); // Refresh the table
+            } else {
+                JOptionPane.showMessageDialog(leaveRequestsPanel, "Failed to approve leave request.");
+            }
+        });
+
+        // Action for Reject button
+        rejectButton.addActionListener(e -> {
+            int selectedRow = leaveTable.getSelectedRow();
+            if (selectedRow == -1) {
+                JOptionPane.showMessageDialog(leaveRequestsPanel, "Please select a leave request to reject.");
+                return;
+            }
+            int absenceId = (int) leaveTableModel.getValueAt(selectedRow, 0); // Get Absence ID
+            // Call method to reject the absence
+            if (absenceRepository.updateAbsenceStatus(absenceId, "Rejected")) {
+                JOptionPane.showMessageDialog(leaveRequestsPanel, "Leave request rejected successfully.");
+                loadLeaveRequests(leaveTableModel); // Refresh the table
+            } else {
+                JOptionPane.showMessageDialog(leaveRequestsPanel, "Failed to reject leave request.");
+            }
+        });
+
+        // Action for View Details button
+        viewDetailsButton.addActionListener(e -> {
+            int selectedRow = leaveTable.getSelectedRow();
+            if (selectedRow == -1) {
+                JOptionPane.showMessageDialog(leaveRequestsPanel, "Please select a leave request to view details.");
+                return;
+            }
+            int absenceId = (int) leaveTableModel.getValueAt(selectedRow, 0); 
+            // Fetch and display details for the selected absence
+            Absence absence = absenceRepository.getAbsenceById(absenceId); 
+            if (absence != null) {
+                String details = String.format("Absence ID: %d\nStaff ID: %d\nLeave Type: %s\nStart Date: %s\nEnd Date: %s\nStatus: %s\nReason: %s",
+                        absence.getAbsenceId(), absence.getUserId(), absence.getLeaveType(),
+                        absence.getStartDate(), absence.getEndDate(), absence.getStatus(), absence.getReason());
+                JOptionPane.showMessageDialog(leaveRequestsPanel, details, "Leave Request Details", JOptionPane.INFORMATION_MESSAGE);
+            } else {
+                JOptionPane.showMessageDialog(leaveRequestsPanel, "Failed to retrieve absence details.");
+            }
+        });
 
         return leaveRequestsPanel;
     }
+
+private void loadLeaveRequests(DefaultTableModel leaveTableModel) {
+    // Clear existing rows
+    leaveTableModel.setRowCount(0);
+
+    // Fetch leave requests from the repository
+    List<Absence> absences = absenceRepository.getAllLeaveRequests(); // Assuming this method exists to fetch all leave requests
+    for (Absence absence : absences) {
+        leaveTableModel.addRow(new Object[] {
+                absence.getAbsenceId(),
+                absence.getUserId(),
+                absence.getLeaveType(),
+                absence.getStartDate(),
+                absence.getEndDate(),
+                absence.getStatus(),
+                absence.getReason()
+        });
+    }
+}
+
+
 
     private void loadStaff() {
         // Clear existing rows
@@ -136,22 +219,6 @@ public class StaffManagementPanel extends JPanel {
         }
     }
 
-    private void loadLeaveRequests(DefaultTableModel leaveTableModel) {
-        // TODO: Implement actual leave request loading from repository
-        // This is a placeholder implementation
-        leaveTableModel.setRowCount(0);
-        // Example data
-        Object[][] sampleData = {
-                { "John Doe", "Vacation", "2023-07-01", "2023-07-10", "Pending", "Family Trip" },
-                { "Jane Smith", "Sick Leave", "2023-07-05", "2023-07-07", "Approved", "Medical Reasons" }
-        };
-
-        for (Object[] data : sampleData) {
-            leaveTableModel.addRow(data);
-        }
-    }
-
-  
 
 
 

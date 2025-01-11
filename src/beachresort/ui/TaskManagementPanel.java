@@ -1,31 +1,53 @@
 package beachresort.ui;
 
+import beachresort.models.Staff; // Assuming you have a Staff model
+import beachresort.models.User; // Assuming you have a User model
+import beachresort.repositories.StaffRepository; // Assuming you have a StaffRepository
+
 import javax.swing.*;
 import java.awt.*;
 
 public class TaskManagementPanel extends JPanel {
-    public TaskManagementPanel() {
-        setLayout(new BorderLayout());
-        setBorder(BorderFactory.createTitledBorder("Task Management"));
+    private StaffRepository staffRepository;
 
-        // Sample task list
-        String[] tasks = {"Task 1: Clean Room 101", "Task 2: Prepare Breakfast", "Task 3: Check Inventory"};
+    public TaskManagementPanel(User user) {
+        staffRepository = new StaffRepository(); // Initialize the repository
+        setLayout(new GridLayout(0, 2, 10, 10)); // Use GridLayout with 2 columns and gaps
 
-        JList<String> taskList = new JList<>(tasks);
-        JScrollPane scrollPane = new JScrollPane(taskList);
-        add(scrollPane, BorderLayout.CENTER);
+        setBorder(BorderFactory.createTitledBorder("Task Details"));
 
-        // Add a button to mark tasks as complete
-        JButton completeTaskButton = new JButton("Mark as Complete");
-        completeTaskButton.addActionListener(e -> {
-            // Logic to mark the selected task as complete
-            String selectedTask = taskList.getSelectedValue();
-            if (selectedTask != null) {
-                JOptionPane.showMessageDialog(this, selectedTask + " marked as complete.");
-            } else {
-                JOptionPane.showMessageDialog(this, "Please select a task to complete.");
-            }
-        });
-        add(completeTaskButton, BorderLayout.SOUTH);
+        // Fetch staff details using the user ID
+        Staff staff = staffRepository.getStaffByUserId(user.getId());
+        if (staff != null) {
+            // Create labels for each detail
+            JLabel staffIdLabel = new JLabel("Staff ID: ");
+            JLabel staffIdValue = new JLabel(String.valueOf(staff.getStaffId()));
+            
+            JLabel positionLabel = new JLabel("Position: ");
+            JLabel positionValue = new JLabel(staff.getPosition());
+            
+            JLabel statusLabel = new JLabel("Status: ");
+            JLabel statusValue = new JLabel(staff.getStatus());
+            
+            JLabel taskLabel = new JLabel("Task: ");
+            JLabel taskValue = new JLabel(staff.getTask());
+
+            // Add labels to the panel
+            add(staffIdLabel);
+            add(staffIdValue);
+            add(positionLabel);
+            add(positionValue);
+            add(statusLabel);
+            add(statusValue);
+            add(taskLabel);
+            add(taskValue);
+        } else {
+            JLabel errorLabel = new JLabel("No staff details found for the user.");
+            errorLabel.setForeground(Color.RED);
+            errorLabel.setHorizontalAlignment(SwingConstants.CENTER);
+            add(errorLabel);
+            add(new JLabel()); // Empty label to maintain grid structure
+        }
+
     }
 }

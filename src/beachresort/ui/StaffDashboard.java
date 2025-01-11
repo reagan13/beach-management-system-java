@@ -25,8 +25,8 @@ public class StaffDashboard extends JFrame {
         // Create main content panel
         mainPanel = new JPanel(new CardLayout());
         mainPanel.add(new StaffDetailsPanel(user), "Staff Details");
-        mainPanel.add(new TaskManagementPanel(), "Task Management");
-        mainPanel.add(new AbsenceManagementPanel(), "Absence Management");
+        mainPanel.add(new TaskManagementPanel(user), "Task Management");
+        mainPanel.add(new AbsenceManagementPanel(user), "Absence Management");
 
         add(mainPanel, BorderLayout.CENTER);
 
