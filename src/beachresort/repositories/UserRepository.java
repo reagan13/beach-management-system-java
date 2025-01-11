@@ -78,29 +78,60 @@ public class UserRepository {
             pstmt.setString(6, user.getContactNumber()); // Set contact number
             pstmt.setString(7, user.getRole().name()); // Assuming UserRole is an enum
 
-            // Execute and return result
-            int rowsAffected = pstmt.executeUpdate();
+           // Execute and return result
+           int rowsAffected = pstmt.executeUpdate();
 
-            // If user is created successfully and the role is OWNER, create the owner record
-            if (rowsAffected > 0 && user.getRole() == User.UserRole.OWNER) {
-                // Assuming you have a method to get the last inserted user ID
+
+            // If user is created successfully, check the role and create the corresponding record
+            if (rowsAffected > 0) {
                 String userId = getLastInsertedUserId(); // Implement this method to retrieve the last inserted user ID
 
-                // Insert owner record
-                String insertOwnerQuery = "INSERT INTO owner (user_id, businessName, licenseNumber) VALUES (?, ?, ?)";
-                try (PreparedStatement ownerPstmt = connection.prepareStatement(insertOwnerQuery)) {
-                    ownerPstmt.setString(1, userId);
-                    ownerPstmt.setString(2, ""); // Replace with actual business name
-                    ownerPstmt.setString(3, ""); // Replace with actual license number
-                    ownerPstmt.executeUpdate();
-                    System.out.println("Owner record added successfully.");
-                } catch (SQLException e) {
-                    System.err.println("Error adding owner record: " + e.getMessage());
-                    e.printStackTrace();
-                    return false;
+                if (user.getRole() == User.UserRole.OWNER) {
+                    // Insert owner record
+                    String insertOwnerQuery = "INSERT INTO owner (user_id, businessName, licenseNumber) VALUES (?, ?, ?)";
+                    try (PreparedStatement ownerPstmt = connection.prepareStatement(insertOwnerQuery)) {
+                        ownerPstmt.setString(1, userId);
+                        ownerPstmt.setString(2, ""); // Replace with actual business name
+                        ownerPstmt.setString(3, ""); // Replace with actual license number
+                        ownerPstmt.executeUpdate();
+                        System.out.println("Owner record added successfully.");
+                    } catch (SQLException e) {
+                        System.err.println("Error adding owner record: " + e.getMessage());
+                        e.printStackTrace();
+                        return false;
+                    }
+                } else if (user.getRole() == User.UserRole.CUSTOMER) {
+                    // Insert customer record
+                    String insertCustomerQuery = "INSERT INTO customer (user_id, numberVisits, preferredAccommodationType) VALUES (?, ?, ?)";
+                    try (PreparedStatement customerPstmt = connection.prepareStatement(insertCustomerQuery)) {
+                        customerPstmt.setString(1, userId);
+                        customerPstmt.setInt(2, 0); // Default number of visits for new customers
+                        customerPstmt.setString(3, ""); // Replace with actual preferred accommodation type
+                        customerPstmt.executeUpdate();
+                        System.out.println("Customer record added successfully.");
+                    } catch (SQLException e) {
+                        System.err.println("Error adding customer record: " + e.getMessage());
+                        e.printStackTrace();
+                        return false;
+                    }
+                } else if (user.getRole() == User.UserRole.STAFF) {
+                    // Insert staff record
+                    String insertStaffQuery = "INSERT INTO staff (user_id, position, status, add_date) VALUES (?, ?, ?, ?)";
+                    try (PreparedStatement staffPstmt = connection.prepareStatement(insertStaffQuery)) {
+                        staffPstmt.setString(1, userId);
+                        staffPstmt.setString(2, ""); // Replace with actual position
+                        staffPstmt.setString(3, "Active"); // Default status for new staff
+                        staffPstmt.setDate(4, new java.sql.Date(System.currentTimeMillis())); // Set current date as add date
+                        staffPstmt.executeUpdate();
+                        System.out.println("Staff record added successfully.");
+                    } catch (SQLException e) {
+                        System.err.println("Error adding staff record: " + e.getMessage());
+                        e.printStackTrace();
+                        return false;
+                    }
                 }
-
             }
+
         
             return rowsAffected > 0;
 

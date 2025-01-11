@@ -5,6 +5,13 @@ import javax.swing.SwingUtilities;
 
 import beachresort.database.DatabaseConnection;
 import beachresort.repositories.BookingRepository;
+import beachresort.repositories.RoomRepository;
+import beachresort.repositories.UserRepository;
+import beachresort.repositories.OwnerRepository;
+import beachresort.repositories.StaffRepository;
+import beachresort.repositories.PaymentRepository;
+import beachresort.repositories.CustomerRepository;
+
 import beachresort.ui.LoginFrame;
 
 public class Main {
@@ -45,7 +52,15 @@ public class Main {
             System.out.println("Initializing Repositories...");
             
             // Initialize and verify booking repository
-            // BookingRepository bookingRepository = new BookingRepository();
+            new BookingRepository();
+            new CustomerRepository();
+            new OwnerRepository();
+            new PaymentRepository();
+            new RoomRepository();
+            new StaffRepository();
+            new UserRepository();
+            
+         
 
             System.out.println("Booking Repository initialized successfully.");
             

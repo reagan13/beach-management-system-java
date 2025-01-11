@@ -19,9 +19,21 @@ public class Customer extends User {
         this.numberOfVisits = 0; // Default number of visits for new customers
     }
 
-    public Customer(String username, String password, String email, String fullName, String address, String contactNumber) {
+    public Customer(String username, String password, String email, String fullName, String address,
+            String contactNumber) {
         super(username, password, email, fullName, address, contactNumber); // Call the parent constructor
     }
+    
+     // New constructor to match the parameters from the repository
+     public Customer(int custId, int userId, String username, String password, String email, String fullName,
+             String address, String contactNumber, String preferredAccommodationType, int numberOfVisits) {
+         super(userId, username, password, email, fullName, address, contactNumber); // Call the parent constructor with userId
+         this.setId(custId); // Set the customer ID
+         this.preferredAccommodationType = preferredAccommodationType;
+         this.numberOfVisits = numberOfVisits;
+     }
+    
+
     // Getter and Setter for preferredAccommodationType
     public String getPreferredAccommodationType() {
         return preferredAccommodationType;
