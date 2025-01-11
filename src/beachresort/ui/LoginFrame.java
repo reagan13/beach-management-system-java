@@ -163,7 +163,9 @@ public class LoginFrame extends JFrame {
                     showErrorDialog("Unsupported role");
             }
         } catch (Exception e) {
+
             showErrorDialog("Error opening dashboard: " + e.getMessage());
+            
         }
     }
 

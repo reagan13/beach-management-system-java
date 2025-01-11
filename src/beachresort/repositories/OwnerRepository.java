@@ -3,6 +3,8 @@ package beachresort.repositories;
 import beachresort.database.DatabaseConnection;
 
 import beachresort.models.Owner;
+import beachresort.models.User;
+import beachresort.models.User.UserRole;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -27,7 +29,7 @@ public class OwnerRepository {
                 "   owner_id INT AUTO_INCREMENT PRIMARY KEY," +
                 "   user_id VARCHAR(50)," +
                 "   businessName VARCHAR(50)," +
-                "   licenseNumber INT," +
+                "   licenseNumber VARCHAR(50)," +
                 "   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP" +
                 ")";
         try (PreparedStatement pstmt = connection.prepareStatement(createTableQuery)) {
@@ -37,41 +39,30 @@ public class OwnerRepository {
             System.err.println("Error creating staff table: " + e.getMessage());
         }
     }
-
-    public void addOwner(String userId, String businessName, int licenseNumber) throws SQLException {
-        String insertQuery = "INSERT INTO owner (user_id, businessName, licenseNumber) VALUES (?, ?, ?)";
-        try (PreparedStatement pstmt = connection.prepareStatement(insertQuery)) {
-            pstmt.setString(1, userId);
-            pstmt.setString(2, businessName);
-            pstmt.setInt(3, licenseNumber);
-            pstmt.executeUpdate();
-            System.out.println("Owner added successfully.");
-        } catch (SQLException e) {
-            System.err.println("Error adding owner: " + e.getMessage());
-            throw e;
-        }
-    }
-    
-
-    public void updateOwner(String userId, String businessName, int licenseNumber) throws SQLException {
+    public void updateOwner(String businessName, String licenseNumber, int userId) throws SQLException {
         String updateQuery = "UPDATE owner SET businessName = ?, licenseNumber = ? WHERE user_id = ?";
         try (PreparedStatement pstmt = connection.prepareStatement(updateQuery)) {
             pstmt.setString(1, businessName);
-            pstmt.setInt(2, licenseNumber);
-            pstmt.setString(3, userId);
+            pstmt.setString(2, licenseNumber);
+            pstmt.setInt(3, userId);
             pstmt.executeUpdate();
             System.out.println("Owner updated successfully.");
         } catch (SQLException e) {
             System.err.println("Error updating owner: " + e.getMessage());
             throw e;
         }
+
     }
+
+    
+    
+    
     // Method to retrieve an owner by user ID
     public Owner getOwnerByUserId(int userId) {
         String query = "SELECT o.owner_id, o.businessName, o.licenseNumber, u.username, u.password, u.email, u.full_name, u.address, u.contact_number "
                 +
                 "FROM owner o " +
-                "JOIN user u ON o.user_id = u.id " +
+                "JOIN users u ON o.user_id = u.id " +
                 "WHERE u.id = ?";
         try (PreparedStatement pstmt = connection.prepareStatement(query)) {
             pstmt.setInt(1, userId); // Use userId as an integer
@@ -113,6 +104,7 @@ public class OwnerRepository {
         }
     }
 
+   
     
 
   

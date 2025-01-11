@@ -18,6 +18,13 @@ public class Owner extends User {
         this.businessName = businessName;
         this.licenseNumber = licenseNumber;
     }
+
+
+     
+    public Owner(String username, String password, String email, String fullName, String address, String contactNumber) {
+        super(username, password, email, fullName, address, contactNumber); // Call the parent constructor
+    }
+
    // Constructor for existing owners
    public Owner(int id, int userId, String username, String password, String email, String fullName, String address,
            String contactNumber, String businessName, String licenseNumber) {
@@ -25,6 +32,16 @@ public class Owner extends User {
        this.businessName = businessName;
        this.licenseNumber = licenseNumber;
    }
+
+   public Owner(User user, String businessName, String licenseNumber) {
+       super(user.getId(), user.getUsername(), user.getPassword(), user.getEmail(), user.getFullName(),
+               user.getAddress(), user.getContactNumber());
+       this.businessName = businessName;
+       this.licenseNumber = licenseNumber;
+   }
+   
+
+
     
     
 

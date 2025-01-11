@@ -6,12 +6,13 @@ import beachresort.models.User;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.sql.SQLException;
 
 public class OwnerDashboard extends JFrame {
     private JPanel mainPanel;
     private JButton currentActiveButton;
 
-    public OwnerDashboard(User user) {
+    public OwnerDashboard(User user) throws SQLException {
         // Frame setup
         setTitle("Beach Resort Management System");
         setSize(1000, 700);

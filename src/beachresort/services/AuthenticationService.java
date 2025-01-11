@@ -30,6 +30,7 @@ public class AuthenticationService {
 
         // Use repository to validate user and return User object
         User user = userRepository.findByUsername(username);
+        
         if (user != null && user.getPassword().equals(password) && user.getRole().name().equals(role)) {
             return user; // Return the authenticated user
         }
@@ -101,6 +102,7 @@ public class AuthenticationService {
                         address,
                         contactNumber
                 );
+
                 System.out.println("Owner created");
                 break;
             case CUSTOMER:

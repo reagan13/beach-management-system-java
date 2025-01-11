@@ -1,6 +1,7 @@
 package beachresort.repositories;
 
 import beachresort.models.User;
+import beachresort.repositories.OwnerRepository;
 import beachresort.database.DatabaseConnection;
 
 import java.sql.*;
@@ -8,9 +9,11 @@ import java.sql.*;
 public class UserRepository {
     private final Connection connection;
 
+
     public UserRepository() throws SQLException {
         connection = DatabaseConnection.getConnection();
         createUserTableIfNotExists();
+        
     }
 
     private void createUserTableIfNotExists() {
@@ -32,7 +35,7 @@ public class UserRepository {
         }
     }
 
-    public boolean createUser (User user) {
+    public boolean createUser(User user) {
         String query = "INSERT INTO users (username, password, email, full_name, address, contact_number, role) VALUES (?, ?, ?, ?, ?, ?, ?)";
         try (PreparedStatement pstmt = connection.prepareStatement(query)) {
             // Validate input
@@ -77,7 +80,30 @@ public class UserRepository {
 
             // Execute and return result
             int rowsAffected = pstmt.executeUpdate();
+
+            // If user is created successfully and the role is OWNER, create the owner record
+            if (rowsAffected > 0 && user.getRole() == User.UserRole.OWNER) {
+                // Assuming you have a method to get the last inserted user ID
+                String userId = getLastInsertedUserId(); // Implement this method to retrieve the last inserted user ID
+
+                // Insert owner record
+                String insertOwnerQuery = "INSERT INTO owner (user_id, businessName, licenseNumber) VALUES (?, ?, ?)";
+                try (PreparedStatement ownerPstmt = connection.prepareStatement(insertOwnerQuery)) {
+                    ownerPstmt.setString(1, userId);
+                    ownerPstmt.setString(2, ""); // Replace with actual business name
+                    ownerPstmt.setString(3, ""); // Replace with actual license number
+                    ownerPstmt.executeUpdate();
+                    System.out.println("Owner record added successfully.");
+                } catch (SQLException e) {
+                    System.err.println("Error adding owner record: " + e.getMessage());
+                    e.printStackTrace();
+                    return false;
+                }
+
+            }
+        
             return rowsAffected > 0;
+
         } catch (SQLException e) {
             // Log specific SQL error
             System.err.println("SQL Error during user creation: " + e.getMessage());
@@ -85,6 +111,70 @@ public class UserRepository {
             return false;
         }
     }
+    
+    // Method to get the last inserted user ID
+    private String getLastInsertedUserId() throws SQLException {
+        String query = "SELECT LAST_INSERT_ID()"; // MySQL specific
+        try (PreparedStatement pstmt = connection.prepareStatement(query);
+                ResultSet rs = pstmt.executeQuery()) {
+            if (rs.next()) {
+                return rs.getString(1);
+            }
+        }
+        return null;
+    }
+
+
+    
+    public boolean updateUser(User user) {
+        String query = "UPDATE users SET username = ?, password = ?, email = ?, full_name = ?, address = ?, contact_number = ? WHERE id = ?";
+        try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+            // Validate input
+            if (user == null) {
+                System.err.println("Attempting to update null user");
+                return false;
+            }
+            if (user.getUsername() == null || user.getUsername().trim().isEmpty()) {
+                System.err.println("Username cannot be null or empty");
+                return false;
+            }
+
+            if (user.getPassword() == null || user.getPassword().trim().isEmpty()) {
+                System.err.println("Password cannot be null or empty");
+                return false;
+            }
+
+            if (user.getEmail() == null || user.getEmail().trim().isEmpty()) {
+                System.err.println("Email cannot be null or empty");
+                return false;
+            }
+
+            if (user.getFullName() == null || user.getFullName().trim().isEmpty()) {
+                System.err.println("Full name cannot be null or empty");
+                return false;
+            }
+            // Prepare statement
+            pstmt.setString(1, user.getUsername());
+            pstmt.setString(2, user.getPassword());
+            pstmt.setString(3, user.getEmail());
+            pstmt.setString(4, user.getFullName());
+            pstmt.setString(5, user.getAddress()); // Set address
+            pstmt.setString(6, user.getContactNumber()); // Set contact number
+            pstmt.setInt(7, user.getId()); // Assuming userId is an integer
+
+            // Execute and return result
+            int rowsAffected = pstmt.executeUpdate();
+            return rowsAffected > 0;
+        } catch (SQLException e) {
+            // Log specific SQL error
+            System.err.println("SQL Error during user update: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+
+
 
     public boolean usernameExists(String username) {
         String query = "SELECT COUNT(*) FROM users WHERE username = ?";
