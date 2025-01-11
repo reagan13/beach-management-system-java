@@ -27,10 +27,9 @@ public class StaffRepository {
     private void createStaffTableIfNotExists() {
         String createTableQuery = "CREATE TABLE IF NOT EXISTS staff (" +
                 "   staff_id INT AUTO_INCREMENT PRIMARY KEY," +
-                "   user_id VARCHAR(50)," + 
-                "   position ENUM('Manager', 'Receptionist', 'Housekeeping', 'Maintenance') NOT NULL," +
+                "   user_id VARCHAR(50)," +
+                "   position ENUM('Manager', 'Receptionist', 'Housekeeping', 'Maintenance','UNASSIGNED') NOT NULL," +
                 "   status ENUM('Active', 'Inactive','Terminated') NOT NULL," +
-                "   add_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP," + // Add date column
                 "   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP" +
                 ")";
         try (PreparedStatement pstmt = connection.prepareStatement(createTableQuery)) {
@@ -40,6 +39,26 @@ public class StaffRepository {
             System.err.println("Error creating staff table: " + e.getMessage());
         }
     }
+
+    public List<Integer> getAllStaffIds() {
+        List<Integer> staffIds = new ArrayList<>();
+        String query = "SELECT staff_id FROM staff where position = 'UNASSIGNED'";
+
+        try (PreparedStatement pstmt = connection.prepareStatement(query);
+                ResultSet rs = pstmt.executeQuery()) {
+
+            while (rs.next()) {
+                staffIds.add(rs.getInt("staff_id"));
+            }
+
+        } catch (SQLException e) {
+            System.err.println("Error fetching staff IDs: " + e.getMessage());
+        }
+
+        return staffIds;
+    }
+
+
 
     public boolean addStaff(Staff staff) {
         try {
@@ -63,7 +82,6 @@ public class StaffRepository {
                 pstmt.setString(1, staff.getUsername());
                 pstmt.setString(2, staff.getPosition());
                 pstmt.setString(3, staff.getStatus());
-                pstmt.setTimestamp(4, new java.sql.Timestamp(staff.getAddDate().getTime())); // Set add date
 
                 int rowsAffected = pstmt.executeUpdate();
                 return rowsAffected > 0;
@@ -74,15 +92,15 @@ public class StaffRepository {
         }
     }
 
-    public boolean updateStaff(Staff staff) {
+    public boolean updateStaff(String position, String status, int staffId) {
         String query = "UPDATE staff SET " +
                 "position = ?, status = ? " +
                 "WHERE staff_id = ?";
 
         try (PreparedStatement pstmt = connection.prepareStatement(query)) {
-            pstmt.setString(1, staff.getPosition());
-            pstmt.setString(2, staff.getStatus());
-            pstmt.setString(3, staff.getUsername());
+            pstmt.setString(1, position);
+            pstmt.setString(2, status);
+            pstmt.setInt(3, staffId);
 
             int rowsAffected = pstmt.executeUpdate();
             return rowsAffected > 0;
@@ -93,17 +111,17 @@ public class StaffRepository {
     }
 
     public Staff getStaffByStaffId(int staffId) {
-        String query = "SELECT s.staff_id, s.position, s.status, s.add_date, u.username, u.password, u.email, u.full_name, u.address, u.contact_number "
+        String query = "SELECT s.staff_id, s.user_id, s.position, s.status, u.username, u.password, u.email, u.full_name, u.address, u.contact_number "
                 +
                 "FROM staff s " +
-                "JOIN user u ON s.user_id = u.id " +
+                "JOIN users u ON s.user_id = u.id " +
                 "WHERE s.staff_id = ?";
         try (PreparedStatement pstmt = connection.prepareStatement(query)) {
             pstmt.setInt(1, staffId); // Use staffId as an integer
             try (ResultSet rs = pstmt.executeQuery()) {
                 if (rs.next()) {
                     return new Staff(
-                            rs.getInt("id"), // id from the user table (assuming this is the primary key for the User class)
+                            rs.getInt("user_id"),
                             rs.getInt("staff_id"), // staffId from the staff table
                             rs.getString("username"), // username from the user table
                             rs.getString("password"), // password from the user table
@@ -112,7 +130,6 @@ public class StaffRepository {
                             rs.getString("address"), // address from the user table
                             rs.getString("contact_number"), // contact number from the user table
                             rs.getString("position"), // position from the staff table
-                            rs.getTimestamp("add_date"), // addDate from the staff table
                             rs.getString("status") // status from the staff table
                     );
 
@@ -139,16 +156,16 @@ public class StaffRepository {
 
     public List<Staff> getAllStaff() {
         List<Staff> staffList = new ArrayList<>();
-        String query = "SELECT s.staff_id, s.user_id, u.username, u.password, u.email, u.full_name, u.address, u.contact_number, s.position, s.add_date, s.status "
+        String query = "SELECT s.staff_id, s.user_id, u.username, u.password, u.email, u.full_name, u.address, u.contact_number, s.position,  s.status "
                 +
                 "FROM staff s " +
-                "JOIN user u ON s.user_id = u.id"; // Join to get user details
+                "JOIN users u ON s.user_id = u.id"; // Join to get user details
 
         try (PreparedStatement pstmt = connection.prepareStatement(query);
                 ResultSet rs = pstmt.executeQuery()) {
             while (rs.next()) {
                 staffList.add(new Staff(
-                        rs.getInt("id"), // id from the user table
+                        rs.getInt("user_id"), // id from the user table
                         rs.getInt("staff_id"), // staffId from the staff table
                         rs.getString("username"), // username from the user table
                         rs.getString("password"), // password from the user table
@@ -157,7 +174,7 @@ public class StaffRepository {
                         rs.getString("address"), // address from the user table
                         rs.getString("contact_number"), // contact number from the user table
                         rs.getString("position"), // position from the staff table
-                        rs.getTimestamp("add_date"), // addDate from the staff table
+                      
                         rs.getString("status") // status from the staff table
                 ));
             }

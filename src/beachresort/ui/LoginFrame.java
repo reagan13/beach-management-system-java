@@ -159,6 +159,9 @@ public class LoginFrame extends JFrame {
                 case OWNER:
                     new OwnerDashboard(user).setVisible(true);
                     break;
+                case STAFF:
+                    new StaffDashboard(user).setVisible(true);
+                    break;
                 default:
                     showErrorDialog("Unsupported role");
             }

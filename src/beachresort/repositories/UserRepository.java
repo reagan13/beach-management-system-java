@@ -116,12 +116,12 @@ public class UserRepository {
                     }
                 } else if (user.getRole() == User.UserRole.STAFF) {
                     // Insert staff record
-                    String insertStaffQuery = "INSERT INTO staff (user_id, position, status, add_date) VALUES (?, ?, ?, ?)";
+                    String insertStaffQuery = "INSERT INTO staff (user_id, position, status) VALUES (?, ?, ?)";
                     try (PreparedStatement staffPstmt = connection.prepareStatement(insertStaffQuery)) {
                         staffPstmt.setString(1, userId);
-                        staffPstmt.setString(2, ""); // Replace with actual position
+                        staffPstmt.setString(2, "UNASSIGNED"); // Replace with actual position
                         staffPstmt.setString(3, "Active"); // Default status for new staff
-                        staffPstmt.setDate(4, new java.sql.Date(System.currentTimeMillis())); // Set current date as add date
+                      
                         staffPstmt.executeUpdate();
                         System.out.println("Staff record added successfully.");
                     } catch (SQLException e) {

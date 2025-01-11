@@ -125,10 +125,10 @@ public class StaffManagementPanel extends JPanel {
         // Populate table
         for (Staff staff : staffList) {
             Object[] rowData = {
-                staff.getUserId(),
-                staff.getName(),
+                staff.getStaffId(),
+                staff.getFullName(),
                 staff.getPosition(),
-                staff.getPhoneNumber(),
+                staff.getContactNumber(),
                 staff.getEmail(),
                 staff.getStatus()
             };
@@ -142,8 +142,8 @@ public class StaffManagementPanel extends JPanel {
         leaveTableModel.setRowCount(0);
         // Example data
         Object[][] sampleData = {
-            {"John Doe", "Vacation", "2023-07-01", "2023-07-10", "Pending", "Family Trip"},
-            {"Jane Smith", "Sick Leave", "2023-07-05", "2023-07-07", "Approved", "Medical Reasons"}
+                { "John Doe", "Vacation", "2023-07-01", "2023-07-10", "Pending", "Family Trip" },
+                { "Jane Smith", "Sick Leave", "2023-07-05", "2023-07-07", "Approved", "Medical Reasons" }
         };
 
         for (Object[] data : sampleData) {
@@ -151,8 +151,13 @@ public class StaffManagementPanel extends JPanel {
         }
     }
 
+  
+
+
+
+
     private void addStaff(ActionEvent e) {
-        JDialog addStaffDialog = new JDialog((Frame)SwingUtilities.getWindowAncestor(this), "Add New Staff", true);
+        JDialog addStaffDialog = new JDialog((Frame) SwingUtilities.getWindowAncestor(this), "Add New Staff", true);
         addStaffDialog.setSize(400, 400);
         addStaffDialog.setLocationRelativeTo(this);
 
@@ -160,49 +165,62 @@ public class StaffManagementPanel extends JPanel {
         panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
         // Input Fields
+        JComboBox<String> staffIdCombo = createStaffIdComboBox(panel, "Staff ID:");
         JTextField nameField = createLabeledTextField(panel, "Full Name:");
         JTextField phoneField = createLabeledTextField(panel, "Phone Number:");
         JTextField emailField = createLabeledTextField(panel, "Email:");
         JComboBox<String> positionCombo = createPositionComboBox(panel, "Position:");
-        JTextField userIdField = createLabeledTextField(panel, "User ID:");
+        JTextField userIdField = createLabeledTextField(panel, "User  ID:");
         JComboBox<String> statusCombo = createStatusComboBox(panel, "Status:");
+
+        // Add ActionListener to staffIdCombo to populate fields when a staff ID is selected
+        staffIdCombo.addActionListener(event -> {
+            int selectedStaffId = Integer.parseInt((String) staffIdCombo.getSelectedItem());
+            Staff staff = staffRepository.getStaffByStaffId(selectedStaffId); // Assuming this method exists
+
+            if (staff != null) {
+                nameField.setText(staff.getFullName());
+                phoneField.setText(staff.getContactNumber());
+                emailField.setText(staff.getEmail());
+                userIdField.setText(String.valueOf(staff.getId()));
+                positionCombo.setSelectedItem(staff.getPosition());
+                statusCombo.setSelectedItem(staff.getStatus());
+            } else {
+                // Clear fields if no staff is found
+                nameField.setText("");
+                phoneField.setText("");
+                emailField.setText("");
+                userIdField.setText("");
+                positionCombo.setSelectedItem("Unassigned");
+                statusCombo.setSelectedItem("Active");
+            }
+        });
 
         JButton saveButton = new JButton("Save");
         saveButton.addActionListener(saveEvent -> {
-            // Validate inputs
+            // // Validate inputs
             if (validateInputs(nameField, phoneField, emailField, userIdField)) {
                 try {
-                    // Create Staff object
-                    Staff newStaff = new Staff(
-                        nameField.getText(),
-                        phoneField.getText(),
-                        emailField.getText(),
-                        (String) positionCombo.getSelectedItem(),
-                        userIdField.getText(),
-                        (String) statusCombo.getSelectedItem(),
-                        new Timestamp(System.currentTimeMillis()),
-                        null
-                    );
+                    // Logic to save the updated staff information
+                   String selectedItem = staffIdCombo.getSelectedItem().toString();
+                    int staffId = Integer.parseInt(selectedItem);
+                   
+                    // Save the updated staff information to the repository
+                    staffRepository.updateStaff( positionCombo.getSelectedItem().toString(),
+                        statusCombo.getSelectedItem().toString(),
+                        staffId); // Assuming this method exists
 
-                    // Attempt to add staff
-                    if (staffRepository.addStaff(newStaff)) {
-                        JOptionPane.showMessageDialog(addStaffDialog, "Staff Added Successfully!");
-                        loadStaff(); // Refresh the staff list
-                        addStaffDialog.dispose();
-                    } else {
-                        JOptionPane.showMessageDialog(addStaffDialog, 
-                            "Failed to add staff. Please check the user ID and email.",
-                            "Error", 
-                            JOptionPane.ERROR_MESSAGE);
-                    }
+                    JOptionPane.showMessageDialog(addStaffDialog, "Staff updated successfully.");
+                    addStaffDialog.dispose();
                 } catch (Exception ex) {
-                    JOptionPane.showMessageDialog(addStaffDialog, 
-                 "Error adding staff: " + ex.getMessage(), 
-                        "Error", 
-                        JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(addStaffDialog,
+                            "Error adding staff: " + ex.getMessage(),
+                            "Error",
+                            JOptionPane.ERROR_MESSAGE);
                 }
             }
         });
+        
         panel.add(saveButton);
 
         JButton cancelButton = new JButton("Cancel");
@@ -213,6 +231,7 @@ public class StaffManagementPanel extends JPanel {
         addStaffDialog.setVisible(true);
     }
 
+
     private void editStaff(ActionEvent e) {
         // Get selected row
         int selectedRow = staffTable.getSelectedRow();
@@ -222,10 +241,11 @@ public class StaffManagementPanel extends JPanel {
         }
 
         // Get user ID of selected staff
-        String userId = staffTable.getValueAt(selectedRow, 0).toString();
+        String userIdString = staffTable.getValueAt(selectedRow, 0).toString();
+        Integer userId = Integer.parseInt(userIdString);
 
         // Fetch existing staff
-        Staff existingStaff = staffRepository.getStaffByUserId(userId);
+        Staff existingStaff = staffRepository.getStaffByStaffId(userId);
         if (existingStaff == null) {
             JOptionPane.showMessageDialog(this, "Staff not found");
             return;
@@ -240,10 +260,10 @@ public class StaffManagementPanel extends JPanel {
 
         // Input Fields
         JTextField nameField = createLabeledTextField(panel, "Full Name:");
-        nameField.setText(existingStaff.getName());
+        nameField.setText(existingStaff.getFullName());
 
         JTextField phoneField = createLabeledTextField(panel, "Phone Number:");
-        phoneField.setText(existingStaff.getPhoneNumber());
+        phoneField.setText(existingStaff.getContactNumber());
 
         JTextField emailField = createLabeledTextField(panel, "Email:");
         emailField.setText(existingStaff.getEmail());
@@ -252,7 +272,7 @@ public class StaffManagementPanel extends JPanel {
         positionCombo.setSelectedItem(existingStaff.getPosition());
 
         JTextField userIdField = createLabeledTextField(panel, "User  ID:");
-        userIdField.setText(existingStaff.getUserId());
+        userIdField.setText(String.valueOf(existingStaff.getId()));
         userIdField.setEditable(false);
 
         JComboBox<String> statusCombo = createStatusComboBox(panel, "Status:");
@@ -260,39 +280,7 @@ public class StaffManagementPanel extends JPanel {
 
         JButton saveButton = new JButton("Save");
         saveButton.addActionListener(saveEvent -> {
-            // Validate inputs
-            if (validateInputs(nameField, phoneField, emailField, userIdField)) {
-                try {
-                    // Create updated Staff object
-                    Staff updatedStaff = new Staff(
-                        nameField.getText(),
-                        phoneField.getText(),
-                        emailField.getText(),
-                        (String) positionCombo.getSelectedItem(),
-                        userIdField.getText(),
-                        (String) statusCombo.getSelectedItem(),
-                        existingStaff.getCreatedAt(),
-                        new Timestamp(System.currentTimeMillis())
-                    );
-
-                    // Attempt to update staff
-                    if (staffRepository.updateStaff(updatedStaff)) {
-                        JOptionPane.showMessageDialog(editStaffDialog, "Staff Updated Successfully!");
-                        loadStaff(); // Refresh the staff list
-                        editStaffDialog.dispose();
-                    } else {
-                        JOptionPane.showMessageDialog(editStaffDialog, 
-                            "Failed to update staff. Please check the details.",
-                            "Error", 
-                            JOptionPane.ERROR_MESSAGE);
-                    }
-                } catch (Exception ex) {
-                    JOptionPane.showMessageDialog(editStaffDialog, 
-                        "Error updating staff: " + ex.getMessage(), 
-                        "Error", 
-                        JOptionPane.ERROR_MESSAGE);
-                }
-            }
+            
         });
         panel.add(saveButton);
 
@@ -357,6 +345,7 @@ public class StaffManagementPanel extends JPanel {
     private JTextField createLabeledTextField(JPanel panel, String label) {
         panel.add(new JLabel(label));
         JTextField textField = new JTextField();
+        textField.setEditable(false);
         panel.add(textField);
         return textField;
     }
@@ -364,7 +353,7 @@ public class StaffManagementPanel extends JPanel {
 
     private JComboBox<String> createPositionComboBox(JPanel panel, String label) {
         panel.add(new JLabel(label));
-        String[] positions = {"Manager", "Receptionist", "Housekeeping", "Maintenance"};
+        String[] positions = {"Unassigned","Manager", "Receptionist", "Housekeeping", "Maintenance"};
         JComboBox<String> comboBox = new JComboBox<>(positions);
         panel.add(comboBox);
         return comboBox;
@@ -372,9 +361,27 @@ public class StaffManagementPanel extends JPanel {
 
     private JComboBox<String> createStatusComboBox(JPanel panel, String label) {
         panel.add(new JLabel(label));
-        String[] statuses = {"Active", "Inactive"};
+        String[] statuses = { "Active", "Inactive" ,"Terminated"};
         JComboBox<String> comboBox = new JComboBox<>(statuses);
         panel.add(comboBox);
         return comboBox;
     }
+
+    private JComboBox<String> createStaffIdComboBox(JPanel panel, String label) {
+        panel.add(new JLabel(label));
+        JComboBox<String> comboBox = new JComboBox<>();
+
+        // Populate the combo box with staff IDs
+        List<Integer> staffIds = staffRepository.getAllStaffIds();
+        for (Integer id : staffIds) {
+            comboBox.addItem(String.valueOf(id)); // Convert Integer to String and add to combo box
+        }
+
+        panel.add(comboBox);
+        return comboBox;
+    }
+
+
+    
+    
 }

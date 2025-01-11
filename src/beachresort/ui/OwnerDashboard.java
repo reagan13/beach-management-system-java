@@ -32,7 +32,7 @@ public class OwnerDashboard extends JFrame {
         mainPanel.add(new CheckInOutPanel(), "Check In / Checkout"); // Add the new panel
         mainPanel.add(new ManageBookingsPanel(), "Manage Bookings");
         mainPanel.add(new RoomManagementPanel(), "Room Management");
-        // mainPanel.add(new StaffManagementPanel(), "Staff Management");
+        mainPanel.add(new StaffManagementPanel(), "Staff Management");
         mainPanel.add(new PaymentManagementPanel(), "Payment Management"); // Add the new panel
         mainPanel.add(new OwnerDetailsPanel(user), "Details");
       
