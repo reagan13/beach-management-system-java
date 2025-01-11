@@ -30,6 +30,7 @@ public class StaffRepository {
                 "   user_id VARCHAR(50)," +
                 "   position ENUM('Manager', 'Receptionist', 'Housekeeping', 'Maintenance','UNASSIGNED') NOT NULL," +
                 "   status ENUM('Active', 'Inactive','Terminated') NOT NULL," +
+                "   task VARCHAR(250)," +
                 "   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP" +
                 ")";
         try (PreparedStatement pstmt = connection.prepareStatement(createTableQuery)) {
@@ -75,14 +76,14 @@ public class StaffRepository {
             }
 
             String query = "INSERT INTO staff " +
-                    "(user_id, position, status, add_date) " +
+                    "(user_id, position, status, tas;) " +
                     "VALUES (?, ?, ?, ?)";
 
             try (PreparedStatement pstmt = connection.prepareStatement(query)) {
                 pstmt.setString(1, staff.getUsername());
                 pstmt.setString(2, staff.getPosition());
                 pstmt.setString(3, staff.getStatus());
-
+                pstmt.setString(4, staff.getTask());
                 int rowsAffected = pstmt.executeUpdate();
                 return rowsAffected > 0;
             }
@@ -92,15 +93,18 @@ public class StaffRepository {
         }
     }
 
-    public boolean updateStaff(String position, String status, int staffId) {
+    public boolean updateStaff(String position, String status, String task,int staffId) {
         String query = "UPDATE staff SET " +
-                "position = ?, status = ? " +
+                "position = ?, status = ?, task = ? " +
                 "WHERE staff_id = ?";
 
         try (PreparedStatement pstmt = connection.prepareStatement(query)) {
             pstmt.setString(1, position);
             pstmt.setString(2, status);
-            pstmt.setInt(3, staffId);
+            pstmt.setString(3, task);
+            pstmt.setInt(4, staffId);
+            
+            
 
             int rowsAffected = pstmt.executeUpdate();
             return rowsAffected > 0;
@@ -111,26 +115,27 @@ public class StaffRepository {
     }
 
     public Staff getStaffByStaffId(int staffId) {
-        String query = "SELECT s.staff_id, s.user_id, s.position, s.status, u.username, u.password, u.email, u.full_name, u.address, u.contact_number "
+        String query = "SELECT s.staff_id, s.user_id, s.position, s.status,s.task, u.username, u.password, u.email, u.full_name, u.address, u.contact_number "
                 +
                 "FROM staff s " +
                 "JOIN users u ON s.user_id = u.id " +
                 "WHERE s.staff_id = ?";
         try (PreparedStatement pstmt = connection.prepareStatement(query)) {
-            pstmt.setInt(1, staffId); // Use staffId as an integer
+            pstmt.setInt(1, staffId); 
             try (ResultSet rs = pstmt.executeQuery()) {
                 if (rs.next()) {
                     return new Staff(
                             rs.getInt("user_id"),
-                            rs.getInt("staff_id"), // staffId from the staff table
-                            rs.getString("username"), // username from the user table
-                            rs.getString("password"), // password from the user table
-                            rs.getString("email"), // email from the user table
-                            rs.getString("full_name"), // fullName from the user table
-                            rs.getString("address"), // address from the user table
-                            rs.getString("contact_number"), // contact number from the user table
-                            rs.getString("position"), // position from the staff table
-                            rs.getString("status") // status from the staff table
+                            rs.getInt("staff_id"), 
+                            rs.getString("username"), 
+                            rs.getString("password"), 
+                            rs.getString("email"), 
+                            rs.getString("full_name"), 
+                            rs.getString("address"), 
+                            rs.getString("contact_number"), 
+                            rs.getString("position"), 
+                            rs.getString("status") ,
+                            rs.getString("task") 
                     );
 
                 }
@@ -159,7 +164,7 @@ public class StaffRepository {
 
     public List<Staff> getAllStaff() {
         List<Staff> staffList = new ArrayList<>();
-        String query = "SELECT s.staff_id, s.user_id, u.username, u.password, u.email, u.full_name, u.address, u.contact_number, s.position,  s.status "
+        String query = "SELECT s.staff_id, s.user_id, u.username, u.password, u.email, u.full_name, u.address, u.contact_number, s.position,  s.status, s.task "
                 +
                 "FROM staff s " +
                 "JOIN users u ON s.user_id = u.id "+
@@ -169,17 +174,17 @@ public class StaffRepository {
                 ResultSet rs = pstmt.executeQuery()) {
             while (rs.next()) {
                 staffList.add(new Staff(
-                        rs.getInt("user_id"), // id from the user table
-                        rs.getInt("staff_id"), // staffId from the staff table
-                        rs.getString("username"), // username from the user table
-                        rs.getString("password"), // password from the user table
-                        rs.getString("email"), // email from the user table
-                        rs.getString("full_name"), // fullName from the user table
-                        rs.getString("address"), // address from the user table
-                        rs.getString("contact_number"), // contact number from the user table
-                        rs.getString("position"), // position from the staff table
-                      
-                        rs.getString("status") // status from the staff table
+                        rs.getInt("user_id"), 
+                        rs.getInt("staff_id"), 
+                        rs.getString("username"), 
+                        rs.getString("password"), 
+                        rs.getString("email"), 
+                        rs.getString("full_name"), 
+                        rs.getString("address"), 
+                        rs.getString("contact_number"), 
+                        rs.getString("position"), 
+                        rs.getString("status"),
+                        rs.getString("task")
                 ));
             }
         } catch (SQLException e) {

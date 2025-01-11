@@ -158,10 +158,10 @@ public class StaffManagementPanel extends JPanel {
 
     private void addStaff(ActionEvent e) {
         JDialog addStaffDialog = new JDialog((Frame) SwingUtilities.getWindowAncestor(this), "Add New Staff", true);
-        addStaffDialog.setSize(400, 400);
+        addStaffDialog.setSize(500, 500);
         addStaffDialog.setLocationRelativeTo(this);
 
-        JPanel panel = new JPanel(new GridLayout(8, 2, 10, 10));
+        JPanel panel = new JPanel(new GridLayout(9, 2, 10, 10));
         panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
         // Input Fields
@@ -172,6 +172,17 @@ public class StaffManagementPanel extends JPanel {
         JComboBox<String> positionCombo = createPositionComboBox(panel, "Position:");
         JTextField userIdField = createLabeledTextField(panel, "User  ID:");
         JComboBox<String> statusCombo = createStatusComboBox(panel, "Status:");
+
+        // Create a text area for tasks
+        JTextArea taskArea = new JTextArea(5, 20); // 5 rows, 20 columns
+        taskArea.setLineWrap(true);
+        taskArea.setWrapStyleWord(true);
+        JScrollPane taskScrollPane = new JScrollPane(taskArea);
+
+        // Add the text area to the panel with a label
+        panel.add(new JLabel("Task:"));
+        panel.add(taskScrollPane);
+
 
         // Add ActionListener to staffIdCombo to populate fields when a staff ID is selected
         staffIdCombo.addActionListener(event -> {
@@ -185,6 +196,7 @@ public class StaffManagementPanel extends JPanel {
                 userIdField.setText(String.valueOf(staff.getId()));
                 positionCombo.setSelectedItem(staff.getPosition());
                 statusCombo.setSelectedItem(staff.getStatus());
+                taskArea.setText(staff.getTask()); // Populate the task area
             } else {
                 // Clear fields if no staff is found
                 nameField.setText("");
@@ -193,8 +205,10 @@ public class StaffManagementPanel extends JPanel {
                 userIdField.setText("");
                 positionCombo.setSelectedItem("Unassigned");
                 statusCombo.setSelectedItem("Active");
+                taskArea.setText(""); // Clear the task area
             }
         });
+
 
         JButton saveButton = new JButton("Save");
         saveButton.addActionListener(saveEvent -> {
@@ -206,12 +220,20 @@ public class StaffManagementPanel extends JPanel {
                     int staffId = Integer.parseInt(selectedItem);
                    
                     // Save the updated staff information to the repository
-                    staffRepository.updateStaff( positionCombo.getSelectedItem().toString(),
+                    
+                    boolean success =   staffRepository.updateStaff( positionCombo.getSelectedItem().toString(),
                         statusCombo.getSelectedItem().toString(),
-                        staffId); // Assuming this method exists
+                        taskArea.getText(),
+                        staffId); 
+                    if (success) {
 
-                    JOptionPane.showMessageDialog(addStaffDialog, "Staff updated successfully.");
-                    addStaffDialog.dispose();
+                        JOptionPane.showMessageDialog(addStaffDialog, "Staff updated successfully.");
+                        addStaffDialog.dispose();
+                    }
+                    else {
+                        JOptionPane.showMessageDialog(addStaffDialog, "Staff not updated successfully.");
+                    }
+
                 } catch (Exception ex) {
                     JOptionPane.showMessageDialog(addStaffDialog,
                             "Error adding staff: " + ex.getMessage(),
@@ -255,15 +277,15 @@ public class StaffManagementPanel extends JPanel {
         editStaffDialog.setSize(400, 400);
         editStaffDialog.setLocationRelativeTo(this);
 
-        JPanel panel = new JPanel(new GridLayout(8, 2, 10, 10));
+        JPanel panel = new JPanel(new GridLayout(9, 2, 10, 10));
         panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
-        // Input Fields
+       // Input Fields
 
         JTextField staffField = createLabeledTextField(panel, "Staff Id:");
         staffField.setText(String.valueOf(existingStaff.getStaffId()));
         staffField.setEditable(false);
-          
+
         JTextField nameField = createLabeledTextField(panel, "Full Name:");
         nameField.setText(existingStaff.getFullName());
         nameField.setEditable(false);
@@ -280,12 +302,23 @@ public class StaffManagementPanel extends JPanel {
         positionCombo.setSelectedItem(existingStaff.getPosition());
         positionCombo.setEditable(true);
 
-        JTextField userIdField = createLabeledTextField(panel, "User  ID:");
+        JTextField userIdField = createLabeledTextField(panel, "User ID:");
         userIdField.setText(String.valueOf(existingStaff.getId()));
         userIdField.setEditable(false);
 
         JComboBox<String> statusCombo = createStatusComboBox(panel, "Status:");
         statusCombo.setSelectedItem(existingStaff.getStatus());
+
+        // Create a text area for tasks
+        JTextArea taskArea = new JTextArea(5, 20); // 5 rows, 20 columns
+        taskArea.setLineWrap(true);
+        taskArea.setWrapStyleWord(true);
+        taskArea.setText(existingStaff.getTask()); // Set the existing task
+        JScrollPane taskScrollPane = new JScrollPane(taskArea);
+
+        // Add the text area to the panel with a label
+        panel.add(new JLabel("Task:"));
+        panel.add(taskScrollPane);
 
 
         JButton saveButton = new JButton("Save");
@@ -297,7 +330,8 @@ public class StaffManagementPanel extends JPanel {
                    
                     // Save the updated staff information to the repository
                     staffRepository.updateStaff( positionCombo.getSelectedItem().toString(),
-                        statusCombo.getSelectedItem().toString(),
+                            statusCombo.getSelectedItem().toString(),
+                                userIdField.getText(),
                         existingStaff.getStaffId());
 
                    // Show success message

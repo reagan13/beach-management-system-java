@@ -91,8 +91,8 @@ public class UserRepository {
                     String insertOwnerQuery = "INSERT INTO owner (user_id, businessName, licenseNumber) VALUES (?, ?, ?)";
                     try (PreparedStatement ownerPstmt = connection.prepareStatement(insertOwnerQuery)) {
                         ownerPstmt.setString(1, userId);
-                        ownerPstmt.setString(2, ""); // Replace with actual business name
-                        ownerPstmt.setString(3, ""); // Replace with actual license number
+                        ownerPstmt.setString(2, ""); 
+                        ownerPstmt.setString(3, ""); 
                         ownerPstmt.executeUpdate();
                         System.out.println("Owner record added successfully.");
                     } catch (SQLException e) {
@@ -105,8 +105,8 @@ public class UserRepository {
                     String insertCustomerQuery = "INSERT INTO customer (user_id, numberVisits, preferredAccommodationType) VALUES (?, ?, ?)";
                     try (PreparedStatement customerPstmt = connection.prepareStatement(insertCustomerQuery)) {
                         customerPstmt.setString(1, userId);
-                        customerPstmt.setInt(2, 0); // Default number of visits for new customers
-                        customerPstmt.setString(3, ""); // Replace with actual preferred accommodation type
+                        customerPstmt.setInt(2, 0);
+                        customerPstmt.setString(3, ""); 
                         customerPstmt.executeUpdate();
                         System.out.println("Customer record added successfully.");
                     } catch (SQLException e) {
@@ -116,12 +116,13 @@ public class UserRepository {
                     }
                 } else if (user.getRole() == User.UserRole.STAFF) {
                     // Insert staff record
-                    String insertStaffQuery = "INSERT INTO staff (user_id, position, status) VALUES (?, ?, ?)";
+                    String insertStaffQuery = "INSERT INTO staff (user_id, position, status, task) VALUES (?, ?, ?, ?)";
                     try (PreparedStatement staffPstmt = connection.prepareStatement(insertStaffQuery)) {
                         staffPstmt.setString(1, userId);
-                        staffPstmt.setString(2, "UNASSIGNED"); // Replace with actual position
-                        staffPstmt.setString(3, "Active"); // Default status for new staff
-                      
+                        staffPstmt.setString(2, "UNASSIGNED");
+                        staffPstmt.setString(3, "Active"); 
+                        staffPstmt.setString(4, ""); 
+    
                         staffPstmt.executeUpdate();
                         System.out.println("Staff record added successfully.");
                     } catch (SQLException e) {

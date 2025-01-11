@@ -23,7 +23,7 @@ public class AbsenceRepository {
         String createTableQuery = 
             "CREATE TABLE IF NOT EXISTS absences (" +
             "   absence_id INT AUTO_INCREMENT PRIMARY KEY," +
-            "   user_id VARCHAR(50) NOT NULL," +
+            "   staff_id INT NOT NULL," + 
             "   leave_type VARCHAR(50) NOT NULL," +
             "   start_date TIMESTAMP NOT NULL," +
             "   end_date TIMESTAMP NOT NULL," +
@@ -40,11 +40,11 @@ public class AbsenceRepository {
         }
     }
 
-    // Validate user exists and has staff role
-    private boolean validateStaffUser(String userId) throws SQLException {
+    // Validate staff user
+    private boolean validateStaffUser (int staffId) throws SQLException {
         String query = "SELECT role FROM users WHERE id = ?";
         try (PreparedStatement pstmt = connection.prepareStatement(query)) {
-            pstmt.setString(1, userId);
+            pstmt.setInt(1, staffId);
             try (ResultSet rs = pstmt.executeQuery()) {
                 if (rs.next()) {
                     return "staff".equalsIgnoreCase(rs.getString("role"));
@@ -57,17 +57,17 @@ public class AbsenceRepository {
     public boolean addAbsence(Absence absence) {
         try {
             // Validate staff user
-            if (!validateStaffUser(absence.getUserId())) {
+            if (!validateStaffUser (absence.getStaffID())) {
                 System.err.println("Invalid staff user");
                 return false;
             }
 
             String query = "INSERT INTO absences " +
-                           "(user_id, leave_type, start_date, end_date, status, reason) " +
+                           "(staff_id, leave_type, start_date, end_date, status, reason) " +
                            "VALUES (?, ?, ?, ?, ?, ?)";
             
             try (PreparedStatement pstmt = connection.prepareStatement(query)) {
-                pstmt.setString(1, absence.getUserId());
+                pstmt.setInt(1, absence.getStaffID());
                 pstmt.setString(2, absence.getLeaveType());
                 pstmt.setTimestamp(3, absence.getStartDate());
                 pstmt.setTimestamp(4, absence.getEndDate());
@@ -83,22 +83,23 @@ public class AbsenceRepository {
         }
     }
 
-    public List<Absence> getAbsencesByUserId(String userId) {
+    public List<Absence> getAbsencesByStaffId(int staffId) {
         List<Absence> absences = new ArrayList<>();
         try {
             // Validate staff user
-            if (!validateStaffUser(userId)) {
+            if (!validateStaffUser (staffId)) {
                 System.err.println("Invalid staff user");
                 return absences;
             }
 
-            String query = "SELECT * FROM absences WHERE user_id = ? ORDER BY start_date DESC";
+            String query = "SELECT * FROM absences WHERE staff_id = ? ORDER BY start_date DESC";
             try (PreparedStatement pstmt = connection.prepareStatement(query)) {
-                pstmt.setString(1, userId);
+                pstmt.setInt(1, staffId);
                 try (ResultSet rs = pstmt.executeQuery()) {
                     while (rs.next()) {
                         Absence absence = new Absence(
-                            rs.getString("user_id"),
+                            rs.getInt("absence_id"),
+                            rs.getInt("staff_id"),
                             rs.getString("leave_type"),
                             rs.getTimestamp("start_date"),
                             rs.getTimestamp("end_date"),
@@ -141,7 +142,8 @@ public class AbsenceRepository {
                  ResultSet rs = pstmt.executeQuery()) {
                 while (rs.next()) {
                     Absence absence = new Absence(
-                        rs.getString("user_id"),
+                        rs.getInt("absence_id"),
+                        rs.getInt("staff_id"),
                         rs.getString("leave_type"),
                         rs.getTimestamp("start_date"),
                         rs.getTimestamp("end_date"),
@@ -153,7 +155,8 @@ public class AbsenceRepository {
                     pendingAbsences.add(absence);
                 }
             }
-        } catch (SQLException e) { System.err.println("Error retrieving pending absences: " + e.getMessage());
+        } catch (SQLException e) {
+            System.err.println("Error retrieving pending absences: " + e.getMessage());
         }
         return pendingAbsences;
     }

@@ -4,7 +4,7 @@ import java.sql.Timestamp;
 
 public class Absence {
     private int absenceId;
-    private String userId; 
+    private int staffId;
     private String leaveType;
     private Timestamp startDate;
     private Timestamp endDate;
@@ -14,10 +14,25 @@ public class Absence {
     private Timestamp updatedAt;
 
     // Constructor
-    public Absence(String userId, String leaveType, Timestamp startDate, 
+    public Absence(int staffId, String leaveType, Timestamp startDate, 
                    Timestamp endDate, String status, String reason, 
-                   Timestamp createdAt, Timestamp updatedAt) {
-        this.userId = userId;
+            Timestamp createdAt, Timestamp updatedAt) {
+        this.staffId = staffId;
+        this.leaveType = leaveType;
+        this.startDate = startDate;
+        this.endDate = endDate;
+        this.status = status;
+        this.reason = reason;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
+    }
+    
+    // Constructor
+    public Absence(int absenceId,int staffId, String leaveType, Timestamp startDate, 
+                   Timestamp endDate, String status, String reason, 
+            Timestamp createdAt, Timestamp updatedAt) {
+        this.absenceId = absenceId;
+        this.staffId = staffId;
         this.leaveType = leaveType;
         this.startDate = startDate;
         this.endDate = endDate;
@@ -37,20 +52,17 @@ public class Absence {
         this.absenceId = absenceId;
     }
 
-    public String getUserId() {
-        return userId;
+    public int getStaffID() {
+        return staffId;
     }
 
-    public void setUserId(String userId) {
-        this.userId = userId;
+    public void setStaffId(int staffId) {
+        this.staffId = staffId;
     }
 
     public String getLeaveType() {
         return leaveType;
     }
-
-
-
     public void setLeaveType(String leaveType) {
         this.leaveType = leaveType;
     }
@@ -106,9 +118,7 @@ public class Absence {
 
     
     public boolean validate() {
-        if (userId == null || userId.trim().isEmpty()) {
-            return false;
-        }
+       
         if (leaveType == null || leaveType.trim().isEmpty()) {
             return false;
         }

@@ -3,34 +3,36 @@ package beachresort.models;
 import java.util.Date;
 
 public class Staff extends User {
-    private int staffId;     // Unique identifier for the staff member
-    private String position; // Position of the staff member (e.g., Manager, Receptionist)
-    private String status;   // Employment status (e.g., Active, Inactive, Terminated)
+    private int staffId;     
+    private String position; 
+    private String status; 
+    private String task;
    
     // Constructor for existing staff (with ID)
     public Staff(int id, int staffId, String username, String password, String email, String fullName, String address,
-            String contactNumber, String position,String status) {
-        super(id, username, password, email, fullName, address, contactNumber); // Call the parent constructor
-        this.staffId = staffId; // Corresponds to staff_id in the database
-        this.position = position; // Corresponds to position in the database
-        this.status = status; // Corresponds to status in the database
+            String contactNumber, String position,String status, String task) {
+        super(id, username, password, email, fullName, address, contactNumber); 
+        this.staffId = staffId; 
+        this.position = position;
+        this.status = status; 
+        this.task = task;
     }
 
 
     // Constructor for new staff (without ID)
     public Staff(String username, String password, String email, String fullName, String address, String contactNumber,
-            String position,  String status) {
-        super(username, password, email, fullName, address, contactNumber); // Call the parent constructor
+            String position,  String status, String task) {
+        super(username, password, email, fullName, address, contactNumber); 
         this.position = position;
-    
         this.status = status;
+        this.task = task;
     }
 
 
 
     public Staff(String username, String password, String email, String fullName, String address,
             String contactNumber) {
-        super(username, password, email, fullName, address, contactNumber); // Call the parent constructor
+        super(username, password, email, fullName, address, contactNumber); 
     }
    
     
@@ -62,6 +64,15 @@ public class Staff extends User {
     public void setStatus(String status) {
         this.status = status;
     }
+
+    public String getTask() {
+        return task;
+    }
+
+    public void setTask(String task) {
+        this.task = task;
+    }
+
 
     @Override
     public UserRole getRole() {
