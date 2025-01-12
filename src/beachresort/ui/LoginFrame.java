@@ -1,6 +1,6 @@
 package beachresort.ui;
 
-import beachresort.models.User;
+import beachresort.models.Person;
 import beachresort.services.AuthenticationService;
 
 import javax.swing.*;
@@ -11,7 +11,7 @@ import java.util.Optional;
 public class LoginFrame extends JFrame {
     private JTextField usernameField;
     private JPasswordField passwordField;
-    private JComboBox<User.UserRole> roleComboBox; // Use enum for roles
+    private JComboBox<Person.PersonRole> roleComboBox; // Use enum for roles
     private AuthenticationService authService;
 
     public LoginFrame() {
@@ -77,7 +77,7 @@ public class LoginFrame extends JFrame {
         mainPanel.add(new JLabel("Role:"), gbc);
 
         gbc.gridx = 1;
-        roleComboBox = new JComboBox<>(User.UserRole.values()); // Use enum values
+        roleComboBox = new JComboBox<>(Person.PersonRole.values()); // Use enum values
         roleComboBox.setPreferredSize(new Dimension(200, 30));
         mainPanel.add(roleComboBox, gbc);
 
@@ -122,20 +122,20 @@ public class LoginFrame extends JFrame {
         try {
             String username = usernameField.getText().trim();
             String password = new String(passwordField.getPassword());
-            User.UserRole role = (User.UserRole) roleComboBox.getSelectedItem();
+            Person.PersonRole role = (Person.PersonRole) roleComboBox.getSelectedItem();
            
             // Authenticate user and get User object
-            User user = authService.authenticateUser(username, password, role.name());
+            Person person = authService.authenticateUser(username, password, role.name());
 
-            if (user != null) {
+            if (person != null) {
                 // Successful login
                 JOptionPane.showMessageDialog(this,
-                        "Login Successful! User: " + user.getUsername(),
+                        "Login Successful! User: " + person.getUsername(),
                         "Success",
                         JOptionPane.INFORMATION_MESSAGE);
 
                 // Open main application window based on role
-                openMainWindow(role, user);
+                openMainWindow(role, person);
 
                 // Close login form
                 dispose();
@@ -149,18 +149,18 @@ public class LoginFrame extends JFrame {
     }
     
 
-    private void openMainWindow(User.UserRole role, User user) {
+    private void openMainWindow(Person.PersonRole role, Person person) {
         try {
             switch (role) {
                 case CUSTOMER:
-                    new CustomerDashboard(user).setVisible(true);
+                    new CustomerDashboard(person).setVisible(true);
                     break;
               
                 case OWNER:
-                    new OwnerDashboard(user).setVisible(true);
+                    new OwnerDashboard(person).setVisible(true);
                     break;
                 case STAFF:
-                    new StaffDashboard(user).setVisible(true);
+                    new StaffDashboard(person).setVisible(true);
                     break;
                 default:
                     showErrorDialog("Unsupported role");

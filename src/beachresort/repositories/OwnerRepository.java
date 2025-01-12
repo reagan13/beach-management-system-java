@@ -3,8 +3,8 @@ package beachresort.repositories;
 import beachresort.database.DatabaseConnection;
 
 import beachresort.models.Owner;
-import beachresort.models.User;
-import beachresort.models.User.UserRole;
+import beachresort.models.Person;
+import beachresort.models.Person.PersonRole;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;

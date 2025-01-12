@@ -1,6 +1,6 @@
 package beachresort.ui;
 
-import beachresort.models.User;
+import beachresort.models.Person;
 
 import javax.swing.*;
 import java.awt.*;
@@ -8,10 +8,10 @@ import java.sql.SQLException;
 
 public class CustomerDashboard extends JFrame {
     private JPanel mainPanel; // Main content panel using CardLayout
-    private User currentUser ; // Current user
+    private Person currentUser ; // Current user
 
-    public CustomerDashboard(User user) throws SQLException {
-        this.currentUser  = user; // Initialize currentUser  with the passed User object
+    public CustomerDashboard(Person person) throws SQLException {
+        this.currentUser  = person; // Initialize currentUser  with the passed User object
         setTitle("Customer Dashboard");
         setSize(1000, 700);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);

@@ -1,23 +1,23 @@
 package beachresort.services;
 
-import beachresort.models.User;
-import beachresort.models.User.UserRole; // Import the UserRole enum
+import beachresort.models.Person;
+import beachresort.models.Person.PersonRole; 
 import beachresort.models.Owner; // Import Owner class
 import beachresort.models.Staff; // Import Staff class
 import beachresort.models.Customer; // Import Customer class
-import beachresort.repositories.UserRepository;
+import beachresort.repositories.PersonRepository;
 
 import java.sql.Date;
 import java.sql.SQLException;
 
 public class AuthenticationService {
-    private UserRepository userRepository;
+    private PersonRepository personRepository;
 
     public AuthenticationService() throws SQLException {
-        this.userRepository = new UserRepository();
+        this.personRepository = new PersonRepository();
     }
 
-    public User authenticateUser (String username, String password, String role) throws SQLException {
+    public Person authenticateUser (String username, String password, String role) throws SQLException {
         // Validate inputs
         System.out.println("Username: " + username);
         System.out.println("Password: " + password);
@@ -29,10 +29,10 @@ public class AuthenticationService {
         }
 
         // Use repository to validate user and return User object
-        User user = userRepository.findByUsername(username);
+        Person person = personRepository.findByUsername(username);
         
-        if (user != null && user.getPassword().equals(password) && user.getRole().name().equals(role)) {
-            return user; // Return the authenticated user
+        if (person != null && person.getPassword().equals(password) && person.getRole().name().equals(role)) {
+            return person; // Return the authenticated user
         }
         
         return null; // Return null if authentication fails
@@ -84,14 +84,14 @@ public class AuthenticationService {
 
     try {
         // Check if username already exists
-        if (userRepository.usernameExists(username)) {
+        if (personRepository.usernameExists(username)) {
             System.err.println("Username already exists: " + username);
             return false;
         }
 
         // Create user object based on role
-        User newUser ;
-        switch (UserRole.valueOf(role.toUpperCase())) {
+        Person newUser ;
+        switch (PersonRole.valueOf(role.toUpperCase())) {
             case OWNER:
                
                 newUser  = new Owner(
@@ -136,7 +136,7 @@ public class AuthenticationService {
         }
 
         // Attempt to create user
-        boolean created = userRepository.createUser(newUser);
+        boolean created = personRepository.createUser(newUser);
 
         
         if (!created) {

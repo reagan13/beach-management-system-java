@@ -1,6 +1,6 @@
 package beachresort.ui;
 
-import beachresort.models.User;
+import beachresort.models.Person;
 import beachresort.services.AuthenticationService;
 
 import javax.swing.*;
@@ -11,7 +11,7 @@ public class RegisterDialog extends JDialog {
     private JTextField usernameField;
     private JPasswordField passwordField;
     private JPasswordField confirmPasswordField;
-    private JComboBox<User.UserRole> roleComboBox; // Use enum for roles
+    private JComboBox<Person.PersonRole> roleComboBox; // Use enum for roles
     private JTextField emailField;
     private JTextField fullNameField;
     private JTextField addressField;
@@ -133,7 +133,7 @@ public class RegisterDialog extends JDialog {
         mainPanel.add(new JLabel("Role:"), gbc);
 
         gbc.gridx = 1;
-        roleComboBox = new JComboBox<>(User .UserRole.values()); // Use enum values
+        roleComboBox = new JComboBox<>(Person.PersonRole.values()); // Use enum values
         roleComboBox.setSelectedIndex(0);
         roleComboBox.setPreferredSize(new Dimension(200, 30));
         mainPanel.add(roleComboBox, gbc);
@@ -166,7 +166,7 @@ public class RegisterDialog extends JDialog {
         String fullName = fullNameField.getText();
         String address = addressField.getText();
         String contactNumber = contactNumberField.getText();
-        User.UserRole role = (User .UserRole) roleComboBox.getSelectedItem();
+        Person.PersonRole role = (Person.PersonRole) roleComboBox.getSelectedItem();
 
         // Basic validation
         if (username.length() < 6) {

@@ -1,6 +1,6 @@
 package beachresort.models;
 
-public class Customer extends User {
+public class Customer extends Person {
     private String preferredAccommodationType; // Customer's preferred type of accommodation
     private int numberOfVisits;                 // Number of visits made by the customer
 
@@ -58,8 +58,8 @@ public class Customer extends User {
     }
 
     @Override
-    public UserRole getRole() {
-        return UserRole.CUSTOMER; // Return the specific role for Customer
+    public PersonRole getRole() {
+        return PersonRole.CUSTOMER; // Return the specific role for Customer
     }
 
     @Override

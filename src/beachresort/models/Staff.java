@@ -2,7 +2,7 @@ package beachresort.models;
 
 import java.util.Date;
 
-public class Staff extends User {
+public class Staff extends Person {
     private int staffId;     
     private String position; 
     private String status; 
@@ -75,8 +75,8 @@ public class Staff extends User {
 
 
     @Override
-    public UserRole getRole() {
-        return UserRole.STAFF; // Return the specific role for Staff
+    public PersonRole getRole() {
+        return PersonRole.STAFF; // Return the specific role for Staff
     }
 
     @Override

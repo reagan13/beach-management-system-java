@@ -1,22 +1,22 @@
 package beachresort.models;
 
-public abstract class User {
-    private int id;                // Unique identifier for the user
-    private String username;       // Username for login
-    private String password;       // Password for login (consider hashing for security)
-    private String email;          // User's email address
-    private String fullName;       // User's full name
-    private String address;         // User's address
-    private String contactNumber;   // User's contact number
+public abstract class Person {
+    private int id;                
+    private String username;      
+    private String password;       
+    private String email;        
+    private String fullName;       
+    private String address;         
+    private String contactNumber;   
 
-    public enum UserRole {
+    public enum PersonRole {
         OWNER,
         CUSTOMER,
         STAFF
     }
 
     // Constructor for existing users (with ID)
-    public User(int id, String username, String password, String email, String fullName, String address, String contactNumber) {
+    public Person(int id, String username, String password, String email, String fullName, String address, String contactNumber) {
         this.id = id;
         this.username = username;
         this.password = password;
@@ -27,7 +27,7 @@ public abstract class User {
     }
 
     // Constructor for new users (without ID)
-    public User(String username, String password, String email, String fullName, String address, String contactNumber) {
+    public Person(String username, String password, String email, String fullName, String address, String contactNumber) {
         this.username = username;
         this.password = password;
         this.email = email;
@@ -94,16 +94,14 @@ public abstract class User {
     }
 
     // Abstract method to get the role of the user
-    public abstract UserRole getRole();
+    public abstract PersonRole getRole();
 
-    // Method to display user information (can be overridden in subclasses)
     public String displayInfo() {
         return String.format("User  ID: %d, Username: %s, Email: %s, Full Name: %s, Address: %s, Contact Number: %s, Role: %s",
                 id, username, email, fullName, address, contactNumber, getRole());
     }
 
-    // Additional method to check if the user is an admin (example)
     public boolean isAdmin() {
-        return getRole() == UserRole.OWNER; 
+        return getRole() == PersonRole.OWNER; 
     }
 }

@@ -1,14 +1,14 @@
 package beachresort.ui;
 
 import javax.swing.*;
-import beachresort.models.User;
+import beachresort.models.Person;
 import java.awt.*;
 import java.sql.SQLException;
 
 public class StaffDashboard extends JFrame {
     private JPanel mainPanel;
 
-    public StaffDashboard(User user) throws SQLException {
+    public StaffDashboard(Person person) throws SQLException {
         // Frame setup
         setTitle("Staff Management System");
         setSize(1000, 700);
@@ -24,9 +24,9 @@ public class StaffDashboard extends JFrame {
 
         // Create main content panel
         mainPanel = new JPanel(new CardLayout());
-        mainPanel.add(new StaffDetailsPanel(user), "Staff Details");
-        mainPanel.add(new TaskManagementPanel(user), "Task Management");
-        mainPanel.add(new AbsenceManagementPanel(user), "Absence Management");
+        mainPanel.add(new StaffDetailsPanel(person), "Staff Details");
+        mainPanel.add(new TaskManagementPanel(person), "Task Management");
+        mainPanel.add(new AbsenceManagementPanel(person), "Absence Management");
 
         add(mainPanel, BorderLayout.CENTER);
 

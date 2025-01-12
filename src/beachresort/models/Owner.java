@@ -1,10 +1,9 @@
 package beachresort.models;
 
-public class Owner extends User {
+public class Owner extends Person {
     private String businessName;   // Name of the business owned by the owner
     private String licenseNumber;   // License number for the business
 
-      // Constructor for existing owners (with ID)
     public Owner(int id, String username, String password, String email, String fullName, String address, String contactNumber, String businessName, String licenseNumber) {
         super(id, username, password, email, fullName, address, contactNumber); // Call the parent constructor
         this.businessName = businessName;
@@ -33,17 +32,13 @@ public class Owner extends User {
        this.licenseNumber = licenseNumber;
    }
 
-   public Owner(User user, String businessName, String licenseNumber) {
-       super(user.getId(), user.getUsername(), user.getPassword(), user.getEmail(), user.getFullName(),
-               user.getAddress(), user.getContactNumber());
+   public Owner(Person person, String businessName, String licenseNumber) {
+       super(person.getId(), person.getUsername(), person.getPassword(), person.getEmail(), person.getFullName(),
+               person.getAddress(), person.getContactNumber());
        this.businessName = businessName;
        this.licenseNumber = licenseNumber;
    }
    
-
-
-    
-    
 
     // Getters and Setters for businessName and licenseNumber
     public String getBusinessName() {
@@ -63,8 +58,8 @@ public class Owner extends User {
     }
 
     @Override
-    public UserRole getRole() {
-        return UserRole.OWNER; // Return the specific role for Owner
+    public PersonRole getRole() {
+        return PersonRole.OWNER; // Return the specific role for Owner
     }
 
     @Override

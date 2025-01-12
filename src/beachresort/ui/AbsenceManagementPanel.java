@@ -1,7 +1,7 @@
 package beachresort.ui;
 
 import beachresort.models.Absence;
-import beachresort.models.User;
+import beachresort.models.Person;
 import beachresort.repositories.StaffRepository;
 import beachresort.repositories.AbsenceRepository;
 
@@ -20,7 +20,7 @@ public class AbsenceManagementPanel extends JPanel {
     private JTable absenceTable;
     private DefaultTableModel tableModel;
 
-    public AbsenceManagementPanel(User user) {
+    public AbsenceManagementPanel(Person person) {
         absenceRepository = new AbsenceRepository();
         staffRepository = new StaffRepository();
         setLayout(new BorderLayout());
@@ -84,7 +84,7 @@ public class AbsenceManagementPanel extends JPanel {
         add(scrollPane, BorderLayout.CENTER);
 
         // Load existing absences for the user
-        loadAbsences(user.getId());
+        loadAbsences(person.getId());
 
         // Action for requesting absence
         requestAbsenceButton.addActionListener(e -> {
@@ -112,7 +112,7 @@ public class AbsenceManagementPanel extends JPanel {
 
                 // Create Absence object
                 Absence absence = new Absence(
-                        user.getId(),
+                        person.getId(),
                         leaveType,
                         sqlStartDate,
                         sqlEndDate,
@@ -128,7 +128,7 @@ public class AbsenceManagementPanel extends JPanel {
                     endDateField.setText("");
                     absenceReasonField.setText("");
                     // Reload the absence list
-                    loadAbsences(user.getId());
+                    loadAbsences(person.getId());
                 } else {
                     JOptionPane.showMessageDialog(this, "Failed to request absence. Please try again.");
                 }

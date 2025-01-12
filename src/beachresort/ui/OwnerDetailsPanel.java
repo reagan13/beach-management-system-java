@@ -1,9 +1,9 @@
 package beachresort.ui;
 
 import beachresort.models.Owner;
-import beachresort.models.User;
+import beachresort.models.Person;
 import beachresort.repositories.OwnerRepository;
-import beachresort.repositories.UserRepository;
+import beachresort.repositories.PersonRepository;
 
 import javax.swing.*;
 import java.awt.*;
@@ -12,8 +12,8 @@ import java.sql.SQLException;
 public class OwnerDetailsPanel extends JPanel {
     private Owner owner; // The owner object to display and update
     private OwnerRepository ownerRepository; // Repository to handle database operations
-    private User user; // The owner object to display and update
-    private UserRepository userRepository; // Repository to handle database operations
+    private Person person; // The owner object to display and update
+    private PersonRepository personRepository; // Repository to handle database operations
 
     // Text fields for owner details
     private JTextField usernameField;
@@ -24,17 +24,17 @@ public class OwnerDetailsPanel extends JPanel {
     private JTextField businessNameField;
     private JTextField licenseNumberField;
 
-    public OwnerDetailsPanel(User user) throws SQLException {
-        this.user = user;
+    public OwnerDetailsPanel(Person person) throws SQLException {
+        this.person = person;
         this.ownerRepository = new OwnerRepository();
-        this.userRepository = new UserRepository();
+        this.personRepository = new PersonRepository();
 
         setLayout(new GridLayout(8, 2, 10, 10));
         setBorder(BorderFactory.createTitledBorder("Owner Details"));
 
              
         if(owner == null){
-            owner = new Owner(user.getId(),user.getUsername(), user.getPassword(), user.getEmail(), user.getFullName(), user.getAddress(), user.getContactNumber(), "","");
+            owner = new Owner(person.getId(),person.getUsername(), person.getPassword(), person.getEmail(), person.getFullName(), person.getAddress(), person.getContactNumber(), "","");
         } else {
             owner.setBusinessName("");
             owner.setLicenseNumber("");
@@ -44,11 +44,11 @@ public class OwnerDetailsPanel extends JPanel {
 
 
         // Initialize text fields with current owner details
-        usernameField = new JTextField(user.getUsername());
-        emailField = new JTextField(user.getEmail());
-        fullNameField = new JTextField(user.getFullName());
-        addressField = new JTextField(user.getAddress());
-        contactNumberField = new JTextField(user.getContactNumber());
+        usernameField = new JTextField(person.getUsername());
+        emailField = new JTextField(person.getEmail());
+        fullNameField = new JTextField(person.getFullName());
+        addressField = new JTextField(person.getAddress());
+        contactNumberField = new JTextField(person.getContactNumber());
         businessNameField = new JTextField(owner.getBusinessName());
         licenseNumberField = new JTextField(owner.getLicenseNumber());
 
@@ -79,7 +79,7 @@ public class OwnerDetailsPanel extends JPanel {
     }
 
     private void loadOwnerDetails() {
-        owner = ownerRepository.getOwnerByUserId(user.getId());
+        owner = ownerRepository.getOwnerByUserId(person.getId());
         if (owner != null) {
             businessNameField.setText(owner.getBusinessName());
             licenseNumberField.setText(owner.getLicenseNumber());
@@ -112,16 +112,16 @@ public class OwnerDetailsPanel extends JPanel {
                     }
 
                     // Update the user and owner
-                    user.setUsername(username);
-                    user.setEmail(email);
-                    user.setFullName(fullName);
-                    user.setAddress(address);
-                    user.setContactNumber(contactNumber);
+                    person.setUsername(username);
+                    person.setEmail(email);
+                    person.setFullName(fullName);
+                    person.setAddress(address);
+                    person.setContactNumber(contactNumber);
                     owner.setBusinessName(businessName);
                     owner.setLicenseNumber(licenseNumber);
 
-                    userRepository.updateUser(user);
-                    ownerRepository.updateOwner(owner.getBusinessName(), owner.getLicenseNumber(), user.getId());
+                    personRepository.updateUser(person);
+                    ownerRepository.updateOwner(owner.getBusinessName(), owner.getLicenseNumber(), person.getId());
 
                 } catch (Exception e) {
                     SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(OwnerDetailsPanel.this,

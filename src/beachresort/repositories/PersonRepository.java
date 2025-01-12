@@ -1,16 +1,17 @@
 package beachresort.repositories;
 
-import beachresort.models.User;
+import beachresort.models.Person;
+import beachresort.models.Person.PersonRole;
 import beachresort.repositories.OwnerRepository;
 import beachresort.database.DatabaseConnection;
 
 import java.sql.*;
 
-public class UserRepository {
+public class PersonRepository {
     private final Connection connection;
 
 
-    public UserRepository() throws SQLException {
+    public PersonRepository() throws SQLException {
         connection = DatabaseConnection.getConnection();
         createUserTableIfNotExists();
         
@@ -35,48 +36,48 @@ public class UserRepository {
         }
     }
 
-    public boolean createUser(User user) {
+    public boolean createUser(Person person) {
         String query = "INSERT INTO users (username, password, email, full_name, address, contact_number, role) VALUES (?, ?, ?, ?, ?, ?, ?)";
         try (PreparedStatement pstmt = connection.prepareStatement(query)) {
             // Validate input
-            if (user == null) {
+            if (person == null) {
                 System.err.println("Attempting to create null user");
                 return false;
             }
 
-            if (user.getUsername() == null || user.getUsername().trim().isEmpty()) {
+            if (person.getUsername() == null || person.getUsername().trim().isEmpty()) {
                 System.err.println("Username cannot be null or empty");
                 return false;
             }
 
-            if (user.getPassword() == null || user.getPassword().trim().isEmpty()) {
+            if (person.getPassword() == null || person.getPassword().trim().isEmpty()) {
                 System.err.println("Password cannot be null or empty");
                 return false;
             }
 
-            if (user.getEmail() == null || user.getEmail().trim().isEmpty()) {
+            if (person.getEmail() == null || person.getEmail().trim().isEmpty()) {
                 System.err.println("Email cannot be null or empty");
                 return false;
             }
 
-            if (user.getFullName() == null || user.getFullName().trim().isEmpty()) {
+            if (person.getFullName() == null || person.getFullName().trim().isEmpty()) {
                 System.err.println("Full name cannot be null or empty");
                 return false;
             }
 
-            if (user.getRole() == null) {
+            if (person.getRole() == null) {
                 System.err.println("Role cannot be null");
                 return false;
             }
 
             // Prepare statement
-            pstmt.setString(1, user.getUsername());
-            pstmt.setString(2, user.getPassword());
-            pstmt.setString(3, user.getEmail());
-            pstmt.setString(4, user.getFullName());
-            pstmt.setString(5, user.getAddress()); // Set address
-            pstmt.setString(6, user.getContactNumber()); // Set contact number
-            pstmt.setString(7, user.getRole().name()); // Assuming UserRole is an enum
+            pstmt.setString(1, person.getUsername());
+            pstmt.setString(2, person.getPassword());
+            pstmt.setString(3, person.getEmail());
+            pstmt.setString(4, person.getFullName());
+            pstmt.setString(5, person.getAddress()); // Set address
+            pstmt.setString(6, person.getContactNumber()); // Set contact number
+            pstmt.setString(7, person.getRole().name()); // Assuming PersonRole is an enum
 
            // Execute and return result
            int rowsAffected = pstmt.executeUpdate();
@@ -86,7 +87,7 @@ public class UserRepository {
             if (rowsAffected > 0) {
                 String userId = getLastInsertedUserId(); // Implement this method to retrieve the last inserted user ID
 
-                if (user.getRole() == User.UserRole.OWNER) {
+                if (person.getRole() == Person.PersonRole.OWNER) {
                     // Insert owner record
                     String insertOwnerQuery = "INSERT INTO owner (user_id, businessName, licenseNumber) VALUES (?, ?, ?)";
                     try (PreparedStatement ownerPstmt = connection.prepareStatement(insertOwnerQuery)) {
@@ -100,7 +101,7 @@ public class UserRepository {
                         e.printStackTrace();
                         return false;
                     }
-                } else if (user.getRole() == User.UserRole.CUSTOMER) {
+                } else if (person.getRole() == Person.PersonRole.CUSTOMER) {
                     // Insert customer record
                     String insertCustomerQuery = "INSERT INTO customer (user_id, numberVisits, preferredAccommodationType) VALUES (?, ?, ?)";
                     try (PreparedStatement customerPstmt = connection.prepareStatement(insertCustomerQuery)) {
@@ -114,7 +115,7 @@ public class UserRepository {
                         e.printStackTrace();
                         return false;
                     }
-                } else if (user.getRole() == User.UserRole.STAFF) {
+                } else if (person.getRole() == Person.PersonRole.STAFF) {
                     // Insert staff record
                     String insertStaffQuery = "INSERT INTO staff (user_id, position, status, task) VALUES (?, ?, ?, ?)";
                     try (PreparedStatement staffPstmt = connection.prepareStatement(insertStaffQuery)) {
@@ -158,41 +159,41 @@ public class UserRepository {
 
 
     
-    public boolean updateUser(User user) {
+    public boolean updateUser(Person person) {
         String query = "UPDATE users SET username = ?, password = ?, email = ?, full_name = ?, address = ?, contact_number = ? WHERE id = ?";
         try (PreparedStatement pstmt = connection.prepareStatement(query)) {
             // Validate input
-            if (user == null) {
+            if (person == null) {
                 System.err.println("Attempting to update null user");
                 return false;
             }
-            if (user.getUsername() == null || user.getUsername().trim().isEmpty()) {
+            if (person.getUsername() == null || person.getUsername().trim().isEmpty()) {
                 System.err.println("Username cannot be null or empty");
                 return false;
             }
 
-            if (user.getPassword() == null || user.getPassword().trim().isEmpty()) {
+            if (person.getPassword() == null || person.getPassword().trim().isEmpty()) {
                 System.err.println("Password cannot be null or empty");
                 return false;
             }
 
-            if (user.getEmail() == null || user.getEmail().trim().isEmpty()) {
+            if (person.getEmail() == null || person.getEmail().trim().isEmpty()) {
                 System.err.println("Email cannot be null or empty");
                 return false;
             }
 
-            if (user.getFullName() == null || user.getFullName().trim().isEmpty()) {
+            if (person.getFullName() == null || person.getFullName().trim().isEmpty()) {
                 System.err.println("Full name cannot be null or empty");
                 return false;
             }
             // Prepare statement
-            pstmt.setString(1, user.getUsername());
-            pstmt.setString(2, user.getPassword());
-            pstmt.setString(3, user.getEmail());
-            pstmt.setString(4, user.getFullName());
-            pstmt.setString(5, user.getAddress()); // Set address
-            pstmt.setString(6, user.getContactNumber()); // Set contact number
-            pstmt.setInt(7, user.getId()); // Assuming userId is an integer
+            pstmt.setString(1, person.getUsername());
+            pstmt.setString(2, person.getPassword());
+            pstmt.setString(3, person.getEmail());
+            pstmt.setString(4, person.getFullName());
+            pstmt.setString(5, person.getAddress()); // Set address
+            pstmt.setString(6, person.getContactNumber()); // Set contact number
+            pstmt.setInt(7, person.getId()); // Assuming userId is an integer
 
             // Execute and return result
             int rowsAffected = pstmt.executeUpdate();
@@ -225,7 +226,7 @@ public class UserRepository {
     }
 
 
-    public User findByUsername(String username) throws SQLException {
+    public Person findByUsername(String username) throws SQLException {
         String query = "SELECT * FROM users WHERE username = ?";
         try (PreparedStatement pstmt = connection.prepareStatement(query)) {
             pstmt.setString(1, username);
@@ -236,7 +237,7 @@ public class UserRepository {
                     String roleString = rs.getString("role");
                     System.out.println("the role is"+ roleString);;
                     // Create the User object
-                    return new User(
+                    return new Person(
                             rs.getInt("id"),
                             rs.getString("username"),
                             rs.getString("password"),
@@ -246,8 +247,8 @@ public class UserRepository {
                             rs.getString("contact_number") // Retrieve contact number
                     ) {
                         @Override
-                        public UserRole getRole() {
-                            return UserRole.valueOf(roleString.toUpperCase());
+                        public PersonRole getRole() {
+                            return PersonRole.valueOf(roleString.toUpperCase());
                         }
                     
                     };

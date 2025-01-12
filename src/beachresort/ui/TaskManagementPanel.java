@@ -1,7 +1,7 @@
 package beachresort.ui;
 
 import beachresort.models.Staff; // Assuming you have a Staff model
-import beachresort.models.User; // Assuming you have a User model
+import beachresort.models.Person; // Assuming you have a User model
 import beachresort.repositories.StaffRepository; // Assuming you have a StaffRepository
 
 import javax.swing.*;
@@ -10,14 +10,14 @@ import java.awt.*;
 public class TaskManagementPanel extends JPanel {
     private StaffRepository staffRepository;
 
-    public TaskManagementPanel(User user) {
+    public TaskManagementPanel(Person person) {
         staffRepository = new StaffRepository(); // Initialize the repository
         setLayout(new GridLayout(0, 2, 10, 10)); // Use GridLayout with 2 columns and gaps
 
         setBorder(BorderFactory.createTitledBorder("Task Details"));
 
         // Fetch staff details using the user ID
-        Staff staff = staffRepository.getStaffByUserId(user.getId());
+        Staff staff = staffRepository.getStaffByUserId(person.getId());
         if (staff != null) {
             // Create labels for each detail
             JLabel staffIdLabel = new JLabel("Staff ID: ");

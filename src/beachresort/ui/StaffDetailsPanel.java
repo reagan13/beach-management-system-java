@@ -2,10 +2,10 @@ package beachresort.ui;
 
 import javax.swing.*;
 import java.awt.*;
-import beachresort.models.User;
+import beachresort.models.Person;
 
 public class StaffDetailsPanel extends JPanel {
-    public StaffDetailsPanel(User user) {
+    public StaffDetailsPanel(Person person) {
         setLayout(new BorderLayout());
         setBorder(BorderFactory.createTitledBorder("Staff Details"));
 
@@ -17,19 +17,19 @@ public class StaffDetailsPanel extends JPanel {
 
         // Display staff details
         JLabel usernameLabel = new JLabel("Username: ");
-        JLabel usernameValue = new JLabel(user.getUsername());
+        JLabel usernameValue = new JLabel(person.getUsername());
         
         JLabel emailLabel = new JLabel("Email: ");
-        JLabel emailValue = new JLabel(user.getEmail());
+        JLabel emailValue = new JLabel(person.getEmail());
         
         JLabel fullNameLabel = new JLabel("Full Name: ");
-        JLabel fullNameValue = new JLabel(user.getFullName());
+        JLabel fullNameValue = new JLabel(person.getFullName());
         
         JLabel addressLabel = new JLabel("Address: ");
-        JLabel addressValue = new JLabel(user.getAddress());
+        JLabel addressValue = new JLabel(person.getAddress());
         
         JLabel contactNumberLabel = new JLabel("Contact Number: ");
-        JLabel contactNumberValue = new JLabel(user.getContactNumber());
+        JLabel contactNumberValue = new JLabel(person.getContactNumber());
 
         // Add labels to the details panel
         gbc.gridx = 0;

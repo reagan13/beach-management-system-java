@@ -2,7 +2,7 @@ package beachresort.ui;
 
 import javax.swing.*;
 
-import beachresort.models.User;
+import beachresort.models.Person;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -12,7 +12,7 @@ public class OwnerDashboard extends JFrame {
     private JPanel mainPanel;
     private JButton currentActiveButton;
 
-    public OwnerDashboard(User user) throws SQLException {
+    public OwnerDashboard(Person person) throws SQLException {
         // Frame setup
         setTitle("Beach Resort Management System");
         setSize(1000, 700);
@@ -34,7 +34,7 @@ public class OwnerDashboard extends JFrame {
         mainPanel.add(new RoomManagementPanel(), "Room Management");
         mainPanel.add(new StaffManagementPanel(), "Staff Management");
         mainPanel.add(new PaymentManagementPanel(), "Payment Management"); // Add the new panel
-        mainPanel.add(new OwnerDetailsPanel(user), "Details");
+        mainPanel.add(new OwnerDetailsPanel(person), "Details");
       
         add(mainPanel, BorderLayout.CENTER);
 

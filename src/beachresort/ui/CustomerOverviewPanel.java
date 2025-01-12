@@ -1,9 +1,9 @@
 package beachresort.ui;
 
 import beachresort.models.Customer;
-import beachresort.models.User;
+import beachresort.models.Person;
 import beachresort.repositories.CustomerRepository;
-import beachresort.repositories.UserRepository;
+import beachresort.repositories.PersonRepository;
 
 import javax.swing.*;
 import java.awt.*;
@@ -12,8 +12,8 @@ import java.sql.SQLException;
 public class CustomerOverviewPanel extends JPanel {
     private Customer customer; 
     private CustomerRepository customerRepository; 
-    private User user; 
-    private UserRepository userRepository;
+    private Person person; 
+    private PersonRepository personRepository;
 
     // Text fields for customer details
     private JTextField usernameField;
@@ -24,27 +24,27 @@ public class CustomerOverviewPanel extends JPanel {
     private JTextField preferredAccommodationField;
     private JTextField numberVisitsField;
 
-    public CustomerOverviewPanel(User user) throws SQLException {
-        this.user = user;
+    public CustomerOverviewPanel(Person person) throws SQLException {
+        this.person = person;
         this.customerRepository = new CustomerRepository();
-        this.userRepository = new UserRepository();
+        this.personRepository = new PersonRepository();
 
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
         // Initialize customer object
-        customer = customerRepository.getCustomerByUserId(user.getId());
+        customer = customerRepository.getCustomerByUserId(person.getId());
         if (customer == null) {
-            customer = new Customer(user.getId(), user.getUsername(), user.getPassword(), user.getEmail(), user.getFullName(), user.getAddress(), user.getContactNumber(), "", 0);
+            customer = new Customer(person.getId(), person.getUsername(), person.getPassword(), person.getEmail(), person.getFullName(), person.getAddress(), person.getContactNumber(), "", 0);
         }
 
         // Initialize text fields with current customer details
-        usernameField = new JTextField(user.getUsername());
+        usernameField = new JTextField(person.getUsername());
         usernameField.setEditable(false); 
-        emailField = new JTextField(user.getEmail());
-        fullNameField = new JTextField(user.getFullName());
-        addressField = new JTextField(user.getAddress());
-        contactNumberField = new JTextField(user.getContactNumber());
+        emailField = new JTextField(person.getEmail());
+        fullNameField = new JTextField(person.getFullName());
+        addressField = new JTextField(person.getAddress());
+        contactNumberField = new JTextField(person.getContactNumber());
         preferredAccommodationField = new JTextField(customer.getPreferredAccommodationType());
         numberVisitsField = new JTextField(String.valueOf(customer.getNumberOfVisits()));
 
@@ -134,16 +134,16 @@ public class CustomerOverviewPanel extends JPanel {
                     }
 
                     // Update the user and customer
-                    user.setUsername(username);
-                    user.setEmail(email);
-                    user.setFullName(fullName);
-                    user.setAddress(address);
-                    user.setContactNumber(contactNumber);
+                    person.setUsername(username);
+                    person.setEmail(email);
+                    person.setFullName(fullName);
+                    person.setAddress(address);
+                    person.setContactNumber(contactNumber);
                     customer.setPreferredAccommodationType(preferredAccommodation);
                     customer.setNumberOfVisits(numberVisits);
 
-                    userRepository.updateUser (user);
-                    customerRepository.updateCustomer(user.getId(), numberVisits, preferredAccommodation);
+                    personRepository.updateUser(person);
+                    customerRepository.updateCustomer(person.getId(), numberVisits, preferredAccommodation);
 
                 } catch (Exception e) {
                     SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(CustomerOverviewPanel.this,
